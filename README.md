@@ -1,1 +1,6 @@
-# EEC-289A-RL
+# EEC-289A-Reinforcement Learning 
+
+
+## Project Ideas: 
+
+
