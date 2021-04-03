@@ -1,10 +1,8 @@
 # Fdb version 3
-["pdflatex"] 1617432171 "Dorsey-homework1.tex" "Dorsey-homework1.pdf" "Dorsey-homework1" 1617432172
-  "Dorsey-homework1.aux" 1617432172 900 7439e61ab525b6bc7aec8ce4bc76be5f "pdflatex"
-  "Dorsey-homework1.out" 1617432172 100 bab9fa0fff107faf30128aa6857715ce "pdflatex"
-  "Dorsey-homework1.tex" 1617432170 780 e8d42423589fc426e5e6d4d2e818dd7d ""
-  "c:/Users/Indy-Windows/Documents/EEC-289A-RL/HW/HW1/latex_file/images/epsilon_greedy.png" 1617430812 32041 25d9f9db9fbb3ee0175df36a7864887a ""
-  "c:/Users/Indy-Windows/Documents/EEC-289A-RL/HW/HW1/latex_file/images/upper_conf_bound.png" 1617430747 26847 dfd6df01dc450674df5cfa53287a1739 ""
+["pdflatex"] 1617446755 "Dorsey-homework1.tex" "Dorsey-homework1.pdf" "Dorsey-homework1" 1617446756
+  "Dorsey-homework1.aux" 1617446756 900 7439e61ab525b6bc7aec8ce4bc76be5f "pdflatex"
+  "Dorsey-homework1.out" 1617446756 100 bab9fa0fff107faf30128aa6857715ce "pdflatex"
+  "Dorsey-homework1.tex" 1617446754 811 5a6c77f322163f9e0c35965f81e4de2a ""
   "c:/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1585967021 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1585963877 1004 54797486969f23fa377b128694d548df ""
   "c:/texlive/2019/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1585963877 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -75,8 +73,10 @@
   "c:/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1585972635 4850785 be240f94697c21bedf0eb948641e15bb ""
   "c:/texlive/2019/texmf-var/web2c/pdftex/pdflatex.fmt" 1585972683 8274577 c1e8f2baef3f84cf92afeefddefbbe3b ""
   "c:/texlive/2019/texmf.cnf" 1585972620 673 4ae7b2f49cee444c5343a45b5d0f169c ""
+  "images/epsilon_greedy.png" 1617430812 32041 25d9f9db9fbb3ee0175df36a7864887a ""
+  "images/upper_conf_bound.png" 1617430747 26847 dfd6df01dc450674df5cfa53287a1739 ""
   (generated)
   "Dorsey-homework1.pdf"
-  "Dorsey-homework1.aux"
   "Dorsey-homework1.out"
+  "Dorsey-homework1.aux"
   "Dorsey-homework1.log"
