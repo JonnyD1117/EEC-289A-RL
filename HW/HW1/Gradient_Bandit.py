@@ -13,7 +13,7 @@ def bandit_prob(action_taken, rw_mean_list):
 
 def soft_max(H_pref, num_act):
 
-	pi = (np.exp(H_pref))/(np.sum(np.exp(H_pref)))
+	pi = (np.exp(H_pref - np.max(H_pref)))/(np.sum(np.exp(H_pref- np.max(H_pref))))
 
 	return pi 
 
@@ -27,7 +27,6 @@ if __name__ == '__main__':
 	num_trial = 2000	  # Number of bandit problems total  
 
 	alpha  = .1 		  # Step Size
-	pi = None
 	act_list = np.arange(k)	  # List of the action possible
 
 	reward_list = np.zeros((num_trial, num_runs))	# Initialize Reward List
@@ -48,8 +47,10 @@ if __name__ == '__main__':
 
 		for j in range(num_runs):		# Iterate over the total number of runs for single bandit problem
 				
-			action_num = choices(act_list, pi)	
+			action_num = choices(act_list, pi)[0]	
 			R = bandit_prob(action_num, actual_rewards)
+
+			# print(action_num)
 			Rt = np.mean(reward_list[i,:])
 
 			if action_num == np.argmax(H): 
