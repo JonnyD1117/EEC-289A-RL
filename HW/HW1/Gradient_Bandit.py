@@ -29,10 +29,8 @@ if __name__ == '__main__':
 	alpha  = .1 		  # Step Size
 	act_list = np.arange(k)	  # List of the action possible
 
-	reward_list = np.zeros((num_trial, num_runs))	# Initialize Reward List
-	avg_reward = np.zeros((3,num_runs))					# Initialize Average Reward List
-	opt_act = np.zeros((num_trial, num_runs))
-	opt_act_mean = np.zeros((3,num_runs))	
+	avg_reward = np.zeros((4,num_runs))					# Initialize Average Reward List
+	opt_act_mean = np.zeros((4,num_runs))	
 
 	alpha_list = [.1, .1, .4, .4 ]
 	Rt_flag = None
@@ -46,6 +44,10 @@ if __name__ == '__main__':
 		if ind == 3: 
 
 			Rt_flag = True
+
+		opt_act = np.zeros((num_trial, num_runs))
+		reward_list = np.zeros((num_trial, num_runs))	# Initialize Reward List
+
 
 		for i in range(num_trial):		# Iterate over the total number of bandit trial
 
@@ -84,7 +86,7 @@ if __name__ == '__main__':
 				pi = soft_max(H, k)						# Action Probabilities
 				reward_list[i,j] = R	
 
-			for run in range(len(avg_reward[:])): 
+			for run in range(len(avg_reward[0, :])): 
 				avg_reward[ind, run] = np.mean(reward_list[:,run]) 
 				opt_act_mean[ind, run] = np.mean(opt_act[:,run])
 		
@@ -94,6 +96,13 @@ if __name__ == '__main__':
 	plt.plot(opt_act_mean[0,:])
 	plt.plot(opt_act_mean[1,:])
 	plt.plot(opt_act_mean[2,:])
+	plt.plot(opt_act_mean[3,:])
+	
+	# plt.plot(avg_reward[0,:])
+	# plt.plot(avg_reward[1,:])
+	# plt.plot(avg_reward[2,:])
+	# plt.plot(avg_reward[3,:])
+
 	plt.xlabel("Steps")
 	plt.ylabel("Optimal Actions") 
 	plt.legend()
