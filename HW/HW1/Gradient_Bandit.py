@@ -30,51 +30,73 @@ if __name__ == '__main__':
 	act_list = np.arange(k)	  # List of the action possible
 
 	reward_list = np.zeros((num_trial, num_runs))	# Initialize Reward List
-	avg_reward = np.zeros(num_runs)					# Initialize Average Reward List
+	avg_reward = np.zeros((3,num_runs))					# Initialize Average Reward List
 	opt_act = np.zeros((num_trial, num_runs))
-	opt_act_mean = np.zeros(num_runs)	
+	opt_act_mean = np.zeros((3,num_runs))	
 
-	for i in range(num_trial):		# Iterate over the total number of bandit trial
+	alpha_list = [.1, .1, .4, .4 ]
+	Rt_flag = None
 
-		if i % 100 == 0: 
-			print("Num Trial:", i)
+	for ind, alpha in enumerate(alpha_list): 
 
-		H = np.zeros(k)
-		pi = soft_max(H, k)
-		Rt = 0
+		if ind == 1: 
 
-		actual_rewards = np.random.normal(4, 1, k)	 # Use normal dist to set "actual" reward values for each bandit "trial"
+			Rt_flag = True
 
-		for j in range(num_runs):		# Iterate over the total number of runs for single bandit problem
-				
-			action_num = choices(act_list, pi)[0]	
-			R = bandit_prob(action_num, actual_rewards)
+		if ind == 3: 
 
-			# print(action_num)
-			Rt = np.mean(reward_list[i,:])
+			Rt_flag = True
 
-			if action_num == np.argmax(H): 
-				opt_act[i,j] = 1
-			else:
-				opt_act[i,j] = 0 
+		for i in range(num_trial):		# Iterate over the total number of bandit trial
 
+			if i % 100 == 0: 
+				print("Num Trial:", i)
 
-			for a in range(k): 
-				if a == action_num: 
-					H[a] = H[a] + alpha*(R - Rt)*(1 - pi[a])
+			H = np.zeros(k)
+			pi = soft_max(H, k)
+			Rt = 0
+
+			actual_rewards = np.random.normal(0, 1, k)	 # Use normal dist to set "actual" reward values for each bandit "trial"
+
+			for j in range(num_runs):		# Iterate over the total number of runs for single bandit problem
+					
+				action_num = choices(act_list, pi)[0]	
+				R = bandit_prob(action_num, actual_rewards)
+
+				if Rt_flag: 
+					Rt = np.mean(reward_list[i,:])
+
+				elif Rt_flag is False: 
+					Rt = 0
+
+				if action_num == np.argmax(H): 
+					opt_act[i,j] = 1
 				else:
-					H[a] = H[a] - alpha*(R - Rt)*pi[a]
+					opt_act[i,j] = 0 
 
-			pi = soft_max(H, k)						# Action Probabilities
-			reward_list[i,j] = R	
 
-		for run in range(len(avg_reward[:])): 
-			avg_reward[run] = np.mean(reward_list[:,run]) 
-			opt_act_mean[run] = np.mean(opt_act[:,run])
-	# print(avg_reward)
+				for a in range(k): 
+					if a == action_num: 
+						H[a] = H[a] + alpha*(R - Rt)*(1 - pi[a])
+					else:
+						H[a] = H[a] - alpha*(R - Rt)*pi[a]
 
-	plt.plot(avg_reward)
-	plt.plot(opt_act_mean)
+				pi = soft_max(H, k)						# Action Probabilities
+				reward_list[i,j] = R	
+
+			for run in range(len(avg_reward[:])): 
+				avg_reward[ind, run] = np.mean(reward_list[:,run]) 
+				opt_act_mean[ind, run] = np.mean(opt_act[:,run])
+		
+		# print(avg_reward)
+		# plt.plot(avg_reward)
+	
+	plt.plot(opt_act_mean[0,:])
+	plt.plot(opt_act_mean[1,:])
+	plt.plot(opt_act_mean[2,:])
+	plt.xlabel("Steps")
+	plt.ylabel("Optimal Actions") 
+	plt.legend()
 	plt.show()
 
 
