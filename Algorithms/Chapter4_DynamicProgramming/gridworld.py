@@ -1,5 +1,5 @@
 import numpy as np 
-
+import random
 
 def coord2index(row, col):
 
@@ -15,104 +15,102 @@ def index2coord(state):
     row_num = int(state/4)
     col_num = state - 4*row_num
 
-    return (row_num, col_num)
+    return row_num, col_num
 
-def policy(state): 
-    # Equiprobable 
-    pi = .25
-    return pi
+def get_reward(current_state_ind):
 
-def state_trans_mode(): 
+    return -1 
 
-    return 1
+def policy():
 
-def get_reward(state, goal_states): 
+    a_prob = .25
 
-    if state in goal_states: 
+    return a_prob
 
-        r = 0 
-    else: 
-        r = -1
+def trans_prob(cur_state_ind, goal_indices):
 
-    return r
+    if cur_state_ind in goal_indices: 
+        return 0
+    
+    else:
+        return 1
 
-def move2nextstate(cur_state, action): 
+def is_state_valid(row, col): 
 
-    cur_row = cur_state[0]
-    cur_col = cur_state[1]
+    new_row = row
+    new_col = col
+
+    valid_state = True
+
+    if new_row < 0 or new_row > 3 or new_col < 0 or new_col > 3: 
+        valid_state = False
+
+    return valid_state
+
+def compute_next_state(current_state_ind, action):
+
+    cur_row, cur_col = index2coord(current_state_ind)
 
     new_row = cur_row
     new_col = cur_col
 
-
-    if action == 0: # Up 
-        new_row -= 1    
+    if action == 0: # up 
+        new_row-=1
 
     elif action == 1: # Down 
-        new_row += 1      
-
-    elif action == 2: # Left
-        new_col -= 1      
+        new_row += 1
+    
+    elif action == 2: # Left 
+        new_col-=1
 
     elif action == 3: # Right
-        new_col += 1      
+        new_col += 1
 
-    # Check if New State is Valid 
-    valid_state = True
+    new_state_ind = coord2index(new_row, new_col)
+    valid_state_flag = is_state_valid(new_row, new_col)
 
-    if new_row < 0 or new_col < 0:
-        valid_state = False 
+    if valid_state_flag: 
+        return new_state_ind
 
-    elif new_row > 3 or new_col > 3: 
-        valid_state = False
+    else:
+        return current_state_ind
 
-    if valid_state: 
-
-        return (new_row, new_col), valid_state
-    else: 
-        return (cur_row, cur_col), valid_state
-    
-        
 if __name__ == '__main__': 
-
-    grid_x = 4 
+    grid_x = 4
     grid_y = 4
+
+
+    num_iter = 8
+    num_actions = 4 
+    num_states = grid_x*grid_y
 
     V = np.zeros(grid_x*grid_y)
     V_new = np.zeros(grid_x*grid_y)
 
+    goal_state_ind = [0, 15]
+    gamma = 1
 
-    num_actions = 4
-    num_itter = 1
-    gamma = .98
-
-    # goal_state = [(0,0), (3,3)] 
-    goal_state = [0, 15] 
-
-
-    for iterr in range(num_itter): 
-        # Iterate over Policy Evaluation as till contvergence
-        for state in range(grid_x*grid_y): 
-            # For each state in value function 
-            coord = index2coord(state)
+    for iteration in range(num_iter): 
+        for state in range(num_states): 
+            v = 0
+            
             for action in range(num_actions): 
-                new_coord, valid_state = move2nextstate(coord, action)
-                row, col = new_coord
+                next_state = compute_next_state(state, action)
 
-                new_state = coord2index(row, col)
+                pi = policy()
+                P = trans_prob(state, goal_state_ind)
+                R = get_reward(state)
+                    
+                v += pi*P*(R + gamma*V[next_state])
 
-                reward = get_reward(new_state, goal_state)
+            V_new[state] = v
+        V = V_new
 
-                if state in goal_state: 
-
-                    V_new[state] += .25*0*(reward + gamma*V[new_state])
-
-                else:
-                            
-                    V_new[state] += .25*1*(reward + gamma*V[new_state])
-
-                        
+    print(V)
+    # print(V_new)
 
 
-    print(V_new)
+
+
+
 
