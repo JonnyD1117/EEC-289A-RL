@@ -1,1 +1,2 @@
-    # print(V_new)
+    if delta < theta: 
+                break 
