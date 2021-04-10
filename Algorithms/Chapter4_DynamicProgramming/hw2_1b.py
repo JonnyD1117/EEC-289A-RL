@@ -29,26 +29,18 @@ if __name__ == '__main__':
         delta = 0 
         counter += 1
 
-        for state in range(1, max_num_states): 
+        for state in range(0, max_num_states): 
 
             v = 0 
             v_state = V[state]
-            current_state = state
 
-            for bet in range(1, state+1): 
+            win_state = min((state + 1), 10)
+            loss_state = max((state - 1), 0)
 
-                win_state = min((state + bet), 10)
-                loss_state = max((state - bet), 0)
+            R_win = 1
+            R_loss = -1
 
-                if win_state >= 10: 
-                    R_win = 1
-                    R_loss = 0
-                else: 
-                    R_win = 0
-                    R_loss = 0
-
-
-                v = P_h*(R_win + gamma*V[win_state]) + P_t*(R_loss + gamma*V[loss_state])
+            v = P_h*(R_win + gamma*V[win_state]) + P_t*(R_loss + gamma*V[loss_state])
 
             V[state] = v
             delta = max(delta, np.abs(v_state - V[state]))
@@ -57,6 +49,7 @@ if __name__ == '__main__':
             break 
 
     print(f"Gambler's Problem: Value Function: - Num Itter {counter}")
+    print("$1 Betting Strategy")
     print(V)
 
 
