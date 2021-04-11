@@ -16,10 +16,10 @@ if __name__ == '__main__':
     init_state = 5
     gamma = 1
 
-    theta = .0001
+    theta = .001
     betting_style = 0
-    P_h = .9 
-    P_t = .1
+    P_h = .1 
+    P_t = .9
 
     counter = 0
     current_state = None
@@ -35,20 +35,17 @@ if __name__ == '__main__':
             v_state = V[state]
             current_state = state
 
+            pi = 1.0/state
+
             for bet in range(1, state+1): 
 
                 win_state = min((state + bet), 10)
                 loss_state = max((state - bet), 0)
 
-                if win_state >= 10: 
-                    R_win = 1
-                    R_loss = 0
-                else: 
-                    R_win = 0
-                    R_loss = 0
+                R_win = bet
+                R_loss = -bet 
 
-
-                v = P_h*(R_win + gamma*V[win_state]) + P_t*(R_loss + gamma*V[loss_state])
+                v += pi*P_h*(R_win + gamma*V[win_state]) + pi*P_t*(R_loss + gamma*V[loss_state])
 
             V[state] = v
             delta = max(delta, np.abs(v_state - V[state]))
