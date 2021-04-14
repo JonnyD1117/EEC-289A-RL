@@ -18,8 +18,6 @@ if __name__ == '__main__':
 
     theta = .001
     betting_style = 0
-    P_h = .9 
-    P_t = .1
 
     counter = 0
     current_state = None
