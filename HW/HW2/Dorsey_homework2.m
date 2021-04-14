@@ -4,10 +4,10 @@
 
 
 
-%% Problem #1.A 
+%% Problem #1.A ~ Agressive betting
 
-max_num_states = 11;
-V = zeros(1, 11) ;
+max_num_states = 10;
+V = zeros(1, 10) ;
 
 state_list = [0:1:(max_num_states-1)];
 
@@ -26,6 +26,16 @@ while true
     counter  = counter + 1;
 
     for state_ind  = 1:1:(max_num_states)
+        
+        if state_ind == 1 
+                P_h = 0; 
+                P_t = 0;
+                
+        else 
+                P_h = .9 ;
+                P_t = .1;
+                
+        end 
 
             v = 0 ;
             v_state = V(state_ind);
@@ -33,11 +43,25 @@ while true
             state_val = state_list(state_ind);
             bet_val = state_val;
 
-            win_state = min((state_val + bet_val), 10) + 1;
-            loss_state = max((state_val - bet_val), 0) + 1;
+            win_state = (state_val + bet_val) + 1;
+            loss_state = (state_val - bet_val) + 1;
 
             R_win = bet_val;
             R_loss = -bet_val;
+            
+            
+            if win_state >=10 
+                win_state =1;
+                
+            end
+            
+                
+            if loss_state <=0
+                loss_state = 1;
+                
+            end
+            
+            
 
             v = P_h*(R_win + gamma*V(win_state)) + P_t*(R_loss + gamma*V(loss_state));
 
@@ -52,17 +76,16 @@ while true
         end 
 end
 
-counter
+counter;
 disp("Problem #1: Max Bet")
 disp(V)
 
 
 
-%% Problem #1.B 
+%% Problem #1.B ~ Conservative Betting ($1) 
 
-
-max_num_states = 11;
-V = zeros(1, max_num_states) ;
+max_num_states = 10;
+V = zeros(1, 10) ;
 
 state_list = [0:1:(max_num_states-1)];
 
@@ -81,17 +104,42 @@ while true
     counter  = counter + 1;
 
     for state_ind  = 1:1:(max_num_states)
+        
+        if state_ind == 1 
+                P_h = 0; 
+                P_t = 0;
+                
+        else 
+                P_h = .9 ;
+                P_t = .1;
+                
+        end 
 
             v = 0 ;
             v_state = V(state_ind);
             
             state_val = state_list(state_ind);
+            bet_val = state_val;
 
-            win_state = min((state_val + 1), 10) + 1;
-            loss_state = max((state_val - 1), 0) + 1;
+            win_state = (state_val + 1) + 1;
+            loss_state = (state_val - 1) + 1;
 
             R_win = 1;
             R_loss = -1;
+            
+            
+            if win_state >=11 
+                win_state =1;
+                
+            end
+            
+                
+            if loss_state <=1
+                loss_state = 1;
+                
+            end
+            
+            
 
             v = P_h*(R_win + gamma*V(win_state)) + P_t*(R_loss + gamma*V(loss_state));
 
@@ -106,19 +154,16 @@ while true
         end 
 end
 
-counter
-disp("Problem #1: $1 Bet")
-
+counter;
+disp("Problem #1: Conservative Bet")
 disp(V)
 
 
 %% Problem #1.C 
 
 
-
-
-max_num_states = 11;
-V = zeros(1, 11) ;
+max_num_states = 10;
+V = zeros(1, 10) ;
 
 state_list = [0:1:(max_num_states-1)];
 
@@ -137,24 +182,54 @@ while true
     counter  = counter + 1;
 
     for state_ind  = 1:1:(max_num_states)
+        
+        if state_ind == 1 
+                P_h = 0; 
+                P_t = 0;       
+        else 
+                P_h = .9;
+                P_t = .1;
+                
+        end 
 
             v = 0 ;
             v_state = V(state_ind);
             
             state_val = state_list(state_ind);
+            bet_val = state_val;
             
-            pi = 1.0/state_val;
+            if state_val == 0 
+                pi = 0;
+            else 
+                pi = 1.0/state_val;
+            end 
             
-            for bet = 1:1:state_val
+                for bet = 1:1:(state_val)
 
-                win_state = min((state_val + bet), 10) + 1;
-                loss_state = max((state_val - bet), 0) + 1;
+
+                win_state = (state_val + bet) + 1;
+                loss_state = (state_val - bet) + 1;
 
                 R_win = bet;
                 R_loss = -bet;
 
-                v = v +  pi*P_h*(R_win + gamma*V(win_state)) + pi*P_t*(R_loss + gamma*V(loss_state));
-            end 
+
+                    if win_state >=11 
+                        win_state =1;
+
+                    end
+
+
+                    if loss_state <=1
+                        loss_state = 1;
+
+                    end
+
+
+
+                v =  v + pi*P_h*(R_win + gamma*V(win_state)) + pi*P_t*(R_loss + gamma*V(loss_state));
+            
+                end 
             V(state_ind) = v;
             delta = max(delta, abs(v_state - V(state_ind)));
             
@@ -166,24 +241,25 @@ while true
         end 
 end
 
-counter
+counter;
 disp("Problem #1: Uniform Random Bet")
-
 disp(V)
+
+
 
 
 %% Problem #2.A 
 
-max_num_states = 11;
-V = zeros(1, 11) ;
+
+
+max_num_states = 10;
+V = zeros(1, 10) ;
 
 state_list = [0:1:(max_num_states-1)];
 
 gamma = 1;
 
 theta = .0001;
-P_h = .1 ;
-P_t = .9;
 
 counter = 0;
 
@@ -194,6 +270,16 @@ while true
     counter  = counter + 1;
 
     for state_ind  = 1:1:(max_num_states)
+        
+        if state_ind == 1 
+                P_h = 0; 
+                P_t = 0;
+                
+        else 
+                P_h = .1 ;
+                P_t = .9;
+                
+        end 
 
             v = 0 ;
             v_state = V(state_ind);
@@ -201,11 +287,25 @@ while true
             state_val = state_list(state_ind);
             bet_val = state_val;
 
-            win_state = min((state_val + bet_val), 10) + 1;
-            loss_state = max((state_val - bet_val), 0) + 1;
+            win_state = (state_val + bet_val) + 1;
+            loss_state = (state_val - bet_val) + 1;
 
             R_win = bet_val;
             R_loss = -bet_val;
+            
+            
+            if win_state >=10 
+                win_state =1;
+                
+            end
+            
+                
+            if loss_state <=0
+                loss_state = 1;
+                
+            end
+            
+            
 
             v = P_h*(R_win + gamma*V(win_state)) + P_t*(R_loss + gamma*V(loss_state));
 
@@ -220,23 +320,23 @@ while true
         end 
 end
 
-counter
+counter;
 disp("Problem #2: Max Bet")
 disp(V)
 
 
-%% Problem #2.B 
 
-max_num_states = 11;
-V = zeros(1, 11) ;
+%% Problem #2.B ~ Conservative Betting ($1) 
+
+max_num_states = 10;
+V = zeros(1, 10) ;
 
 state_list = [0:1:(max_num_states-1)];
 
 gamma = 1;
 
 theta = .0001;
-P_h = .1 ;
-P_t = .9;
+
 
 counter = 0;
 
@@ -247,17 +347,42 @@ while true
     counter  = counter + 1;
 
     for state_ind  = 1:1:(max_num_states)
+        
+        if state_ind == 1 
+                P_h = 0; 
+                P_t = 0;
+                
+        else 
+                P_h = .1 ;
+                P_t = .9;
+                
+        end 
 
             v = 0 ;
             v_state = V(state_ind);
             
             state_val = state_list(state_ind);
+            bet_val = state_val;
 
-            win_state = min((state_val + 1), 10) + 1;
-            loss_state = max((state_val - 1), 0) + 1;
+            win_state = (state_val + 1) + 1;
+            loss_state = (state_val - 1) + 1;
 
             R_win = 1;
             R_loss = -1;
+            
+            
+            if win_state >=11 
+                win_state =1;
+                
+            end
+            
+                
+            if loss_state <=1
+                loss_state = 1;
+                
+            end
+            
+            
 
             v = P_h*(R_win + gamma*V(win_state)) + P_t*(R_loss + gamma*V(loss_state));
 
@@ -272,25 +397,22 @@ while true
         end 
 end
 
-counter
-disp("Problem #2: $1 Bet")
-
+counter;
+disp("Problem #2: Conservative Bet")
 disp(V)
 
 
 %% Problem #2.C 
 
 
-max_num_states = 11;
-V = zeros(1, 11) ;
+max_num_states = 10;
+V = zeros(1, 10) ;
 
 state_list = [0:1:(max_num_states-1)];
 
 gamma = 1;
 
 theta = .0001;
-P_h = .1 ;
-P_t = .9;
 
 counter = 0;
 
@@ -301,24 +423,54 @@ while true
     counter  = counter + 1;
 
     for state_ind  = 1:1:(max_num_states)
+        
+        if state_ind == 1 
+                P_h = 0; 
+                P_t = 0;       
+        else 
+                P_h = .1;
+                P_t = .9;
+                
+        end 
 
             v = 0 ;
             v_state = V(state_ind);
             
             state_val = state_list(state_ind);
+            bet_val = state_val;
             
-            pi = 1.0/state_val;
+            if state_val == 0 
+                pi = 0;
+            else 
+                pi = 1.0/state_val;
+            end 
             
-            for bet = 1:1:state_val
+                for bet = 1:1:(state_val)
 
-                win_state = min((state_val + bet), 10) + 1;
-                loss_state = max((state_val - bet), 0) + 1;
+
+                win_state = (state_val + bet) + 1;
+                loss_state = (state_val - bet) + 1;
 
                 R_win = bet;
                 R_loss = -bet;
 
-                v = v +  pi*P_h*(R_win + gamma*V(win_state)) + pi*P_t*(R_loss + gamma*V(loss_state));
-            end 
+
+                    if win_state >=11 
+                        win_state =1;
+
+                    end
+
+
+                    if loss_state <=1
+                        loss_state = 1;
+
+                    end
+
+
+
+                v =  v + pi*P_h*(R_win + gamma*V(win_state)) + pi*P_t*(R_loss + gamma*V(loss_state));
+            
+                end 
             V(state_ind) = v;
             delta = max(delta, abs(v_state - V(state_ind)));
             
@@ -330,10 +482,10 @@ while true
         end 
 end
 
-counter
+counter;
 disp("Problem #2: Uniform Random Bet")
-
 disp(V)
+
 
 
 

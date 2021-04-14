@@ -43,7 +43,7 @@ if __name__ == '__main__':
             v_state = V[state]
             current_state = state
 
-            if state ==0: 
+            if state == 0: 
                 pi = 0
             else: 
                 pi = 1.0/state
