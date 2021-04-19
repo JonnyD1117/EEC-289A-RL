@@ -107,7 +107,7 @@ def improvement_loop(pi, V_func):
 
     for state in range(0, max_state_num): 
 
-        if state ==0: 
+        if state == 0: 
             P_h = 0
             P_t = 0 
         else: 
@@ -116,33 +116,42 @@ def improvement_loop(pi, V_func):
         
         old_action[state] = pi[state]
 
-        V_state_max = []
-
-        for bet in range(1, 10):
-            # bet = old_action[state]
-
-            R_win = bet
-            R_loss = -bet
-
-            win_state = state + bet
-            loss_state = state - bet
-
-            if win_state >= 10:
-                    win_state = 0
-            if loss_state <= 0:
-                    loss_state = 0
-
-            v_win = P_h*(R_win + gamma*V_func[win_state])
-            v_loss = P_t*(R_loss + gamma*V_func[loss_state])
-
-            v = v_win + v_loss
-
-            V_state_max.append(v)
+        action_values = []
 
 
-        new_policy[state] = np.argmax(V_state_max)
+        if state == 0: 
 
-        print("Value Func", V_state_max)
+            new_policy[state] = 0
+            action_values.append(0) 
+        else: 
+            
+
+            for bet in range(state):
+
+                v = 0 
+                # bet = old_action[state]
+
+                R_win = bet
+                R_loss = -bet
+
+                win_state = state + bet
+                loss_state = state - bet
+
+                if win_state >= 10:
+                        win_state = 0
+                if loss_state <= 0:
+                        loss_state = 0
+
+                v_win = P_h*(R_win + gamma*V_func[win_state])
+                v_loss = P_t*(R_loss + gamma*V_func[loss_state])
+
+                v = v_win + v_loss
+
+                action_values.append(v)
+
+            new_policy[state] = np.argmax(action_values)
+
+        # print("Value Func", V_state_max)
         print("Max Action", new_policy[state])
 
 
