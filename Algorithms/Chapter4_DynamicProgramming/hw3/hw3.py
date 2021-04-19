@@ -4,16 +4,13 @@ import random
 
 
 
-def policy_evaluation(policy): 
-
+def policy_evaluation(policy):
 
     max_num_states = 10
     V = np.zeros(max_num_states)
 
     gamma = 1
-
-    theta = .001
-
+    theta = .0001
     counter = 0
 
     while True: 
@@ -33,10 +30,8 @@ def policy_evaluation(policy):
 
             v = 0 
             v_state = V[state]
-            # current_state = state
 
             pi = 1
-            
             bet = policy[state]
 
             win_state = (state + bet)
@@ -45,13 +40,10 @@ def policy_evaluation(policy):
             R_win = bet
             R_loss = -bet 
 
-            if win_state >=10: 
+            if win_state >= 10:
                 win_state = 0
-            if loss_state <=0: 
+            if loss_state <= 0:
                 loss_state = 0
-
-            # print(f"Win State {win_state}")
-            # print(f"Loss State {loss_state}")
 
             v_win = pi*P_h*(R_win + gamma*V[win_state])
             v_loss = pi*P_t*(R_loss + gamma*V[loss_state])
@@ -64,34 +56,47 @@ def policy_evaluation(policy):
         if delta < theta: 
             break
 
+    # print(f"Policy Evaluation Counter {counter}")
+
     return V
 
 def policy_improvement(init_policy): 
 
     # Initial Value Func. Approximation (given deterministic Policy)
     value_func = policy_evaluation(init_policy)
+    print(f"Initial Value Function {value_func}")
 
     # Initialize policy to the initial policy 
     pi = init_policy
 
+    imprv_counter = 0 
+
     max_state_num = 10
     old_action = [] 
-    new_policy = [] 
+    new_policy = []
 
-    stable_flag, _ = improvement_loop(init_policy, value_func)
+    stable_flag = False
+
+    # stable_flag, _ = improvement_loop(init_policy, value_func)
 
     while stable_flag is False: 
+
+        imprv_counter += 1
+
+        if imprv_counter % 1000 ==0:
+            print(f"Improvement Cycles {imprv_counter}")
 
         stable_flag, improved_policy = improvement_loop(pi, value_func)
         pi = improved_policy
         value_func = policy_evaluation(pi)
 
-    return pi
+    print(f"Policy Improvement Counter: {imprv_counter}")
+
+    return pi, value_func
 
 def improvement_loop(pi, V_func): 
 
-    P_h = .9 
-    P_t = .1
+
     gamma = 1
     max_state_num = 10
 
@@ -101,25 +106,45 @@ def improvement_loop(pi, V_func):
     stability = True
 
     for state in range(0, max_state_num): 
+
+        if state ==0: 
+            P_h = 0
+            P_t = 0 
+        else: 
+            P_h = .9
+            P_t = .1
         
         old_action[state] = pi[state]
-        bet = old_action[state]
 
-        R_win = bet
-        R_loss = -bet
+        V_state_max = []
 
-        win_state = state + bet
-        loss_state = state - bet
+        for bet in range(1, 10):
+            # bet = old_action[state]
 
-        if win_state >=10: 
-                win_state = 0
-        if loss_state <=0: 
-                loss_state = 0
+            R_win = bet
+            R_loss = -bet
 
-        v_win = P_h*(R_win + gamma*V_func[win_state])
-        v_loss = P_t*(R_loss + gamma*V_func[loss_state])
+            win_state = state + bet
+            loss_state = state - bet
 
-        new_policy[state] = bet
+            if win_state >= 10:
+                    win_state = 0
+            if loss_state <= 0:
+                    loss_state = 0
+
+            v_win = P_h*(R_win + gamma*V_func[win_state])
+            v_loss = P_t*(R_loss + gamma*V_func[loss_state])
+
+            v = v_win + v_loss
+
+            V_state_max.append(v)
+
+
+        new_policy[state] = np.argmax(V_state_max)
+
+        print("Value Func", V_state_max)
+        print("Max Action", new_policy[state])
+
 
         if old_action[state] != new_policy[state]: 
 
@@ -130,24 +155,17 @@ def improvement_loop(pi, V_func):
 
 
 
-
-
-
-
 if __name__ == '__main__': 
 
 
-    init_policy = np.ones(10, dtype=int)
+    init_policy = np.random.randint(1, 9, size=10,dtype=int)
+    print(init_policy)
 
-    init_policy[1] = int(1)
-
-
-    # converged_value_func = policy_evaluation(init_policy)
-
-    # print(converged_value_func)
-
-    optimal_policy = policy_improvement(init_policy)
+    optimal_policy, optimal_value_func = policy_improvement(init_policy)
+    print("Optimal Policy")
     print(optimal_policy)
+    print("Optimal Value Function")
+    print(optimal_value_func)
     
     
 
