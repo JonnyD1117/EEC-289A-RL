@@ -1,6 +1,8 @@
 %% EEC 289A Homework #3 
 % Jonathan Dorsey 
 
+%% RUN TIME ~ 34ms 
+
 
 %% Policy Iteration Algorithm 
 init_policy = ones(1,10);
