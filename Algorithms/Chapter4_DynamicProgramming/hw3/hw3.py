@@ -264,51 +264,51 @@ def value_iteration():
 
 
 if __name__ == '__main__': 
-    # print("##############################################")
-    # print(" ---------- Policy Iteration -----------------")
-    # print("##############################################")
-    # print("                                              ")
+    print("##############################################")
+    print(" ---------- Policy Iteration -----------------")
+    print("##############################################")
+    print("                                              ")
 
-    # init_policy = np.random.randint(1, 9, size=10,dtype=int)                    # Initialize Init_policy randomly 
-    # init_policy[0] = 0                                                          # Set the policy to 0 for state == 0 
+    init_policy = np.random.randint(1, 9, size=10,dtype=int)                    # Initialize Init_policy randomly 
+    init_policy[0] = 0                                                          # Set the policy to 0 for state == 0 
 
-    # # init_policy = np.ones(10,dtype=int)                                       # Initialize Init_policy to all ones (aka. $1 betting strategy as seen in HW2)
-    # # init_policy[0] = 0                                                        # Set the policy to 0 for state == 0 
+    # init_policy = np.ones(10,dtype=int)                                       # Initialize Init_policy to all ones (aka. $1 betting strategy as seen in HW2)
+    # init_policy[0] = 0                                                        # Set the policy to 0 for state == 0 
     
 
     
 
 
-    # print("Initial Random Policy ",init_policy)
+    print("Initial Random Policy ",init_policy)
 
-    # optimal_policy, optimal_value_func = policy_iteration(init_policy)        # Perform Policy Improvement and output: Optimal Policy & Optimal Value Function
+    optimal_policy, optimal_value_func = policy_iteration(init_policy)        # Perform Policy Improvement and output: Optimal Policy & Optimal Value Function
 
-    # print("Optimal Policy")
-    # print(optimal_policy)
-    # print("Optimal Value Function")
-    # print(optimal_value_func)
-
-
-
-    # print("                                              ")
-    # print("                                              ")
-
-    # print("##############################################")
-    # print(" ---------- Value Iteration -----------------")
-    # print("##############################################")
-    # print("                                              ")
+    print("Optimal Policy")
+    print(optimal_policy)
+    print("Optimal Value Function")
+    print(optimal_value_func)
 
 
-    # opt_value_func, opt_policy = value_iteration()
-    # print("Optimal Policy")
-    # print(opt_policy)
-    # print("Optimal Value Function")
-    # print(opt_value_func)
+
+    print("                                              ")
+    print("                                              ")
+
+    print("##############################################")
+    print(" ---------- Value Iteration -----------------")
+    print("##############################################")
+    print("                                              ")
 
 
-    init_policy = np.ones(10,dtype=int)                                       # Initialize Init_policy to all ones (aka. $1 betting strategy as seen in HW2)
-    init_policy[0] = 0  
+    opt_value_func, opt_policy = value_iteration()
+    print("Optimal Policy")
+    print(opt_policy)
+    print("Optimal Value Function")
+    print(opt_value_func)
 
 
-    ones_val = policy_evaluation(init_policy)
-    print(ones_val)
+    # init_policy = np.ones(10,dtype=int)                                       # Initialize Init_policy to all ones (aka. $1 betting strategy as seen in HW2)
+    # init_policy[0] = 0  
+
+
+    # ones_val = policy_evaluation(init_policy)
+    # print(ones_val)
