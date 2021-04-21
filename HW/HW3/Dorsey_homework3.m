@@ -1,7 +1,7 @@
-import numpy as np 
-import random 
+%%
 
 
+%%
 # Policy Iteration
 def policy_evaluation(policy):
     """
