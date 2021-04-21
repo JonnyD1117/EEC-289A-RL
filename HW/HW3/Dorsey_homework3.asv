@@ -224,47 +224,40 @@ function V_func, new_policy = value_iteration()
 
     for state = [0:1:(max_num_states+1)]            % Loop Over all states in MDP 
 
-            if state == 0                          % If state == 0, state does not transition 
+            if state == 0:                          % If state == 0, state does not transition 
                 P_h = 0 ;
                 P_t = 0;
 
                 continue
                 
-            else                                  % If state !=0, functionine transition probilities 
+            else:                                   % If state !=0, functionine transition probilities 
                 P_h = .1 ;
                 P_t = .9;
-            end 
 
-            action_values = [-inf];                                               % Initialize Action-Value function for CURRENT state NOTE: Q(0) = -infinity to garuntee argmax improvement does no select infeasible action   
+            action_values = [-inf]                                               % Initialize Action-Value function for CURRENT state NOTE: Q(0) = -infinity to garuntee argmax improvement does no select infeasible action   
 
-            for bet = [1:1:(state+1)]                                         % For every possible action (aka Bet) possible from the current state: Compute the 
-                Q = 0  ;                                                             % Action value for current action TAKEN from the current state                                                         % functionine Probability of Transition into tails ONCE action (aka bet) is taken 
+            for bet in range(1, (state+1)):                                         % For every possible action (aka Bet) possible from the current state: Compute the 
+                Q = 0                                                               % Action value for current action TAKEN from the current state                                                         % functionine Probability of Transition into tails ONCE action (aka bet) is taken 
 
-                R_win = bet ;                                                        % functionine reward for Winning (aka Heads)
-                R_loss = -bet ;                                                      % functionine reward for lossing (aka Tails) 
+                R_win = bet                                                         % functionine reward for Winning (aka Heads)
+                R_loss = -bet                                                       % functionine reward for lossing (aka Tails) 
 
-                win_state = state + bet;                                             % Compute new state if HEADs
-                loss_state = state - bet ;                                           % Compute new state if TAILs
+                win_state = state + bet                                             % Compute new state if HEADs
+                loss_state = state - bet                                            % Compute new state if TAILs
 
-                if win_state >= 11                                                 % Bound win and loss states to prevent OUT OF BOUNDS index for value function 
-                    win_state = 1;
-                    
-                end 
-                if loss_state <= 1
-                    loss_state = 1;
-                    
-                end
+                if win_state >= 10:                                                 % Bound win and loss states to prevent OUT OF BOUNDS index for value function 
+                    win_state = 0
+                if loss_state <= 0:
+                    loss_state = 0
 
-                v_win = P_h*(R_win + gamma*V_func(win_state))  ;                     % Compute the updated value of winning the coin toss
-                v_loss = P_t*(R_loss + gamma*V_func(loss_state));                    % Compute the updated value of lossing the coin toss 
+                v_win = P_h*(R_win + gamma*V_func[win_state])                       % Compute the updated value of winning the coin toss
+                v_loss = P_t*(R_loss + gamma*V_func[loss_state])                    % Compute the updated value of lossing the coin toss 
 
-                Q = v_win + v_loss     ;                                             % Sum to find the action-value Q(s,a) in the CURRENT state under the CURRENT action (bet) 
-                action_values(end + 1) = Q ;
-            end 
+                Q = v_win + v_loss                                                  % Sum to find the action-value Q(s,a) in the CURRENT state under the CURRENT action (bet) 
+                action_values(end + 1) = Q 
             
-            max_val, argmax = max(action_values)  ;  
-            new_policy(state) = argmax;                            % Once all possible actions have been taken (for current state) select the MAX Action-Value 
-    end 
+            new_policy[state] = argmax(action_values)                            % Once all possible actions have been taken (for current state) select the MAX Action-Value 
+
                                         
             
             
@@ -287,9 +280,14 @@ function V_func, new_policy = value_iteration()
             
             
 
-    init_policy = randi(1, 9,[1,10])
-    init_policy(0) = 0                                                         
+    init_policy = random.randint(1, 9, size=10,dtype=int)                    % Initialize Init_policy randomly 
+    init_policy[0] = 0                                                          % Set the policy to 0 for state == 0 
 
+    % init_policy = ones(10,dtype=int)                                       % Initialize Init_policy to all ones (aka. $1 betting strategy as seen in HW2)
+    % init_policy[0] = 0                                                        % Set the policy to 0 for state == 0 
+    
+
+    
 
 
     print("Initial Random Policy ",init_policy)
@@ -300,6 +298,16 @@ function V_func, new_policy = value_iteration()
     print(optimal_policy)
     print("Optimal Value Function")
     print(optimal_value_func)
+
+
+
+    print("                                              ")
+    print("                                              ")
+
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    print(" ---------- Value Iteration -----------------")
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    print("                                              ")
 
 
     opt_value_func, opt_policy = value_iteration()
