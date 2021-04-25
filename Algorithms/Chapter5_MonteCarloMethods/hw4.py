@@ -1,6 +1,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
 import random
+import copy
 
 
 ##########################################################
@@ -39,7 +40,7 @@ import random
 card_values = {1: (1,11), 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 10, 12: 10, 13: 10 }
 
 
-policy_dict = ["hit": 0, "stick": 1]
+policy_dict = {"hit": 0, "stick": 1}
 
 def dealer_action(state, deck_of_cards, card_cnt, dealer_policy=1):
     """
@@ -65,17 +66,20 @@ def dealer_action(state, deck_of_cards, card_cnt, dealer_policy=1):
                 done = True                         
 
         if dealer_policy == 2:                      # STICK on 17 
-            if dealer_value =>17:                   # If Dealer_value is => 17 set DONE -> True
+            if dealer_value >= 17:                   # If Dealer_value is => 17 set DONE -> True
                 done = True
 
-    return dealer_value, card_cnt
+    return dealer_value, card_cnt   
 
-def policy(player_state, dealer_state, useable_ace): 
+def policy(state): 
+    hand_value = state[0]
 
+    if hand_value <= 18: 
 
+        return 0
 
-
-    return 
+    else: 
+        return 1
 
 def check_ace_useability(current_state, new_card_value): 
 
@@ -99,7 +103,11 @@ def who_won(current_state, dealers_value):
 
         R_game = -1
 
-    if current_state[0] ==21 and dealers_value != 21: 
+    if current_state[0] == 21 and dealers_value != 21: 
+
+        R_game = 1
+
+    if current_state[0] > dealers_value: 
 
         R_game = 1
 
@@ -125,23 +133,28 @@ def create_deck():
 
     return shuffled_deck
 
-def generate_blackjack_episode(policy, dealer_policy): 
+def generate_blackjack_episode(dealer_policy): 
 
 
     # Create Random Deck of Cards
     card_deck = create_deck() 
 
-    # Empty Trajectory List will store Tuples (S, A, R, S') Until Terminal State is acheived
+    # Empty Trajectory List will store List [S, A, R, S'] Until Terminal State is acheived
     episode_trajectory = [] 
 
     # Initialize States Randomly (Exploring Starts)
-    state = (random.randint(0,21), random.randint(1,10), random.randint(0,1))
+    useable_ace_state =  True if random.randint(0,1) == 0 else False
+
+    state = [random.randint(4,13), random.randint(1,10), useable_ace_state ]
+    print(f"Initial State {state}")
+    print("  ")
 
     done = False                                    # Set DONE Flag for End of Episode 
     card_counter = 0                                # Initialize Counter for which current card to pull from deck                            
 
     R_intermediate = 0                              # Intermediate Rewards during Game are ZERO
-    new_state = state                               # Initialize the New state from the current state
+    new_state = copy.deepcopy(state)                            # Initialize the New state from the current state
+
 
     while done is not True:                         # While Player is still HITTING loop
 
@@ -149,23 +162,32 @@ def generate_blackjack_episode(policy, dealer_policy):
 
         if player_action == 0:                      # Player HITS
 
-            new_state[0] += card_deck[card_counter] # Player Dealt single card (Update Value of Players hand)
             ace_check = check_ace_useability(state, card_deck[card_counter])    # Check if new Card is a useable ACE    
+            
+            if ace_check: 
+                new_state[0] += 11 # Player Dealt single card (Update Value of Players hand)
+                new_state[2] = ace_check                # Update Useable ACE state
+
+            else: 
+                new_state[0] += card_deck[card_counter] # Player Dealt single card (Update Value of Players hand)
+            
             card_counter += 1                       # Increment the deck counter
 
-            new_state[2] = ace_check                # Update Useable ACE state
-                
-        elif player_action == 1:                    # Player STICKS
+        
+        if player_action == 1:                    # Player STICKS
             done = True                             # Change Loop Stopping Condition 
-
-        episode_trajectory.append(state, player_action, R_intermediate, new_state)
-        state = new_state                           # Update the current state to the new state
+        
+        episode_trajectory.append([state, player_action, R_intermediate, new_state])
+        state = copy.deepcopy(new_state)                          # Update the current state to the new state
+        print(f" Episode {episode_trajectory}")
+        print(f" State Value {new_state[0]} ")
+        print("  ")
 
     dealer_val, card_counter = dealer_action(state, card_deck, card_counter, dealer_policy)         # Once all Player card are dealt, Compute the Dealers hand value 
 
     reward = who_won(state, dealer_val)             # After ALL cards a dealt, check if the Player or the Dealer WON, and define the reward accordingly
 
-    episode_trajectory.append(state, 1, R_game, state)      # Append TERMINAL state to Episode 
+    # episode_trajectory.append([state, 1, reward, state])      # Append TERMINAL state to Episode 
 
     return episode_trajectory
 
@@ -181,7 +203,7 @@ def generate_blackjack_episode(policy, dealer_policy):
 if __name__ == '__main__':
 
 
-    create_deck()
+    episode_traj = generate_blackjack_episode(dealer_policy=1)
 
-
-
+    # for k in range(len(episode_traj)): 
+    #     print(episode_traj[k])
