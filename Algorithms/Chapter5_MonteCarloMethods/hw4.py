@@ -70,7 +70,6 @@ def dealer_action(state, deck_of_cards, card_cnt, dealer_policy=1):
 
     return dealer_value, card_cnt
 
-
 def policy(player_state, dealer_state, useable_ace): 
 
 
@@ -93,6 +92,22 @@ def check_ace_useability(current_state, new_card_value):
 
     else: 
         return False                                # If new card is NOT an ACE return False
+
+def who_won(current_state, dealers_value): 
+
+    if current_state[0] > 21 or current_state[0] < dealers_value: 
+
+        R_game = -1
+
+    if current_state[0] ==21 and dealers_value != 21: 
+
+        R_game = 1
+
+    if current_state[0] == dealers_value: 
+
+        R_game = 0 
+
+    return R_game
 
 def create_deck(): 
 
@@ -136,15 +151,9 @@ def generate_blackjack_episode(policy, dealer_policy):
 
             new_state[0] += card_deck[card_counter] # Player Dealt single card (Update Value of Players hand)
             ace_check = check_ace_useability(state, card_deck[card_counter])    # Check if new Card is a useable ACE    
-            card_counter += 1                        # Increment the deck counter
+            card_counter += 1                       # Increment the deck counter
 
-            if ace_check is True:                   # If ACE is useable update new state 
-                new_state[2] = True                 # Update state[2] tuple value
-
-            else: 
-                # New Card is either NOT an ace 
-                # OR 
-                # Not a useable ACE
+            new_state[2] = ace_check                # Update Useable ACE state
                 
         elif player_action == 1:                    # Player STICKS
             done = True                             # Change Loop Stopping Condition 
@@ -152,23 +161,13 @@ def generate_blackjack_episode(policy, dealer_policy):
         episode_trajectory.append(state, player_action, R_intermediate, new_state)
         state = new_state                           # Update the current state to the new state
 
-    dealer_val, card_counter = dealer_action(state, card_deck, card_counter, dealer_policy)
+    dealer_val, card_counter = dealer_action(state, card_deck, card_counter, dealer_policy)         # Once all Player card are dealt, Compute the Dealers hand value 
 
-    if state[0] > 21 or state[0] < dealer_val: 
+    reward = who_won(state, dealer_val)             # After ALL cards a dealt, check if the Player or the Dealer WON, and define the reward accordingly
 
-        R_game = -1
+    episode_trajectory.append(state, 1, R_game, state)      # Append TERMINAL state to Episode 
 
-    if state[0] ==21 and dealer_val != 21: 
-
-        R_game = 1
-
-    if state[0] ==dealer_val: 
-
-        R_game = 0 
-
-    episode_trajectory.append(state, 1, R_game, state)
-
-
+    return episode_trajectory
 
 
 
