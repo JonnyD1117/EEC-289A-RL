@@ -34,12 +34,8 @@ import copy
     # 2) Loss: Dealer is closer/equal to 21 (wihtout going over) than player 
     # 3) Draw: Player & Dealer Have SAME value OR both have 21 
 
-
-
 # card_values = {"A": (1,11), "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "J": 10, "Q": 10, "K": 10 }
 card_values = {1: (1,11), 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 10, 12: 10, 13: 10 }
-
-
 policy_dict = {"hit": 0, "stick": 1}
 
 def dealer_action(state, deck_of_cards, card_cnt, dealer_policy=1):
@@ -70,6 +66,49 @@ def dealer_action(state, deck_of_cards, card_cnt, dealer_policy=1):
                 done = True
 
     return dealer_value, card_cnt   
+
+def player_action (state, ep_traj, card_deck):
+
+    done = False                                    # Set DONE Flag for End of Episode 
+    card_counter = 0                                # Initialize Counter for which current card to pull from deck                            
+    R_intermediate = 0                              # Intermediate Rewards during Game are ZERO
+
+    cur_state = state.copy()
+    new_state = state.copy()
+
+    while done is not True:                         # While Player is still HITTING loop
+
+        player_action = policy(new_state)           # Sample Players action from the current state of the MDP
+
+        if player_action == 0:                      # Player HITS
+
+            ace_check = check_ace_useability(new_state, card_deck[card_counter])    # Check if new Card is a useable ACE    
+            
+            if ace_check: 
+                new_state[0] += 11                  # Player Dealt single card (Update Value of Players hand)
+                new_state[2] = ace_check            # Update Useable ACE state
+
+            else: 
+                new_state[0] += card_deck[card_counter] # Player Dealt single card (Update Value of Players hand)
+            
+            if new_state[0]>21: 
+                done = True
+            card_counter += 1                       # Increment the deck counter
+
+        
+        if player_action == 1:                      # Player STICKS
+            done = True                             # Change Loop Stopping Condition 
+        
+        ep_traj.append([cur_state, player_action, R_intermediate, new_state])
+
+        cur_state = new_state.copy() #copy.deepcopy(new_state)                          # Update the current state to the new state
+        new_state = new_state.copy()
+
+        # print(f" Episode {ep_traj}")
+        # print(f" State Value {new_state[0]} ")
+        # print("  ")
+
+    return new_state, ep_traj, card_counter
 
 def policy(state): 
     hand_value = state[0]
@@ -107,7 +146,7 @@ def who_won(current_state, dealers_value):
 
         R_game = 1
 
-    if current_state[0] > dealers_value: 
+    if current_state[0] > dealers_value and current_state[0] <=21: 
 
         R_game = 1
 
@@ -145,65 +184,41 @@ def generate_blackjack_episode(dealer_policy):
     # Initialize States Randomly (Exploring Starts)
     useable_ace_state =  True if random.randint(0,1) == 0 else False
 
-    state = [random.randint(4,13), random.randint(1,10), useable_ace_state ]
-    print(f"Initial State {state}")
-    print("  ")
-
-    done = False                                    # Set DONE Flag for End of Episode 
-    card_counter = 0                                # Initialize Counter for which current card to pull from deck                            
-
-    R_intermediate = 0                              # Intermediate Rewards during Game are ZERO
-    new_state = copy.deepcopy(state)                            # Initialize the New state from the current state
-
-
-    while done is not True:                         # While Player is still HITTING loop
-
-        player_action = policy(state)               # Sample Players action from the current state of the MDP
-
-        if player_action == 0:                      # Player HITS
-
-            ace_check = check_ace_useability(state, card_deck[card_counter])    # Check if new Card is a useable ACE    
-            
-            if ace_check: 
-                new_state[0] += 11 # Player Dealt single card (Update Value of Players hand)
-                new_state[2] = ace_check                # Update Useable ACE state
-
-            else: 
-                new_state[0] += card_deck[card_counter] # Player Dealt single card (Update Value of Players hand)
-            
-            card_counter += 1                       # Increment the deck counter
-
-        
-        if player_action == 1:                    # Player STICKS
-            done = True                             # Change Loop Stopping Condition 
-        
-        episode_trajectory.append([state, player_action, R_intermediate, new_state])
-        state = copy.deepcopy(new_state)                          # Update the current state to the new state
-        print(f" Episode {episode_trajectory}")
-        print(f" State Value {new_state[0]} ")
-        print("  ")
+    state = [random.randint(4,13), random.randint(1,10), useable_ace_state]                 
+    # print(f"Initial State {state}")
+    # print("  ")
+    
+    state, episode_trajectory, card_counter =  player_action (state, episode_trajectory, card_deck)    
 
     dealer_val, card_counter = dealer_action(state, card_deck, card_counter, dealer_policy)         # Once all Player card are dealt, Compute the Dealers hand value 
 
     reward = who_won(state, dealer_val)             # After ALL cards a dealt, check if the Player or the Dealer WON, and define the reward accordingly
 
-    # episode_trajectory.append([state, 1, reward, state])      # Append TERMINAL state to Episode 
+    episode_trajectory.append([state, 1, reward, state])      # Append TERMINAL state to Episode 
 
     return episode_trajectory
 
 
 
 
-
-
-
-
-
-
 if __name__ == '__main__':
 
+    mean = []
 
-    episode_traj = generate_blackjack_episode(dealer_policy=1)
+    for j in range(1000): 
 
-    # for k in range(len(episode_traj)): 
-    #     print(episode_traj[k])
+        counter = 0 
+
+        for k in range(100000): 
+
+            episode_traj = generate_blackjack_episode(dealer_policy=1)
+
+            init_ace = episode_traj[0][3][2]
+            final_ace = episode_traj[-1][3][2]
+
+            if init_ace is False and final_ace is True: 
+                counter += 1
+        mean.append(counter)
+
+        print(f"Mean {np.mean(mean)}")
+
