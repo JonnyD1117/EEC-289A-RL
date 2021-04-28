@@ -8,18 +8,59 @@
 
 %% Black Jack Simulator
 
-dealer_case = 1; 
+dealer_case = 2; 
 current_player_policy = ones(21,10,2); 
+current_player_policy(17:18, :,:) = 0;
 
 
-trajectory = generate_blackjack_trajectory(current_player_policy, dealer_case)
-trajectory
+trajectory = generate_blackjack_trajectory(current_player_policy, dealer_case);
+trajectory{end}{3}
 
 %% Monte Carlo Learning 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%                           Initialize MC                       %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+init_policy = ones(21,10,2); 
+
+init_policy(17:21, :,:) = 0;
+
+Q = zeros(21, 10, 2, 2);
+N = zeros(21, 10, 2, 2);
+gamma = 1; 
+dealer_policy = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%                           Run MC                      %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
+for eps = 1:1:10
+    
+    traj = generate_blackjack_trajectory(init_policy, dealer_policy);
+    num_t = length(traj);
+    
+    G = 0; 
+    
+    for T = 1:1: num_t 
+        
+        state = traj{T}{1};
+        action = traj{T}{2};
+        reward = traj{T}{3};
+        new_state = traj{T}{4};
+        
+        s1 = state(1); 
+        s2 = state(2);
+        s3 = state(3);
+        
+        G = gamma*G + reward;
+        
+        N(s1, s2, s3, (action+1)) = N(s1, s2, s3, action) + 1; 
+        Q(s1, s2, s3, (action+1) = Q(s1, s2, s3, action) + (1/N(s1, s2, s3, action))*(G - Q(s1, s2, s3, action));
+            
+    end 
+     
+end 
 
 
 
@@ -60,18 +101,22 @@ state = [player_init_state, dealer_init_state, usable_ace_state];      % Initial
 
     % Deal Players Cards (according to current Player POLICY)
     [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
+    
+    new_state = trajectory{end}{1};                             % Extract NEW state from trajectory 
    
     % Deal Dealers Cards (according to fix Dealer Policy)
     if bust == 1                                                    % If Player ALREADY bust then Dealer already WON
-
+%         disp("Player went BUST")
         final_trajectory = trajectory; 
     else                                                            % IF Player DIDN'T bust then Dealer Still needs to Draw cards 
 
-        [dealer_value, card_counter] = dealers_turn(card_deck, card_counter, dealer_cards, dealer_policy);     % Dealer Draws Cards until Dealer_value >=17 
+        [dealer_value, card_counter] = dealers_turn(card_deck, card_counter, dealer_init_cards, dealer_policy);     % Dealer Draws Cards until Dealer_value >=17 
 
         terminal_reward = who_won(new_state, dealer_value);         % Determine Who WON 
-        trajectory{end+1} = {cur_state, 0, terminal_reward, new_state};  % Return Trajectory
+        trajectory{end+1} = {new_state, 0, terminal_reward, new_state};  % Return Trajectory
         final_trajectory = trajectory;
+        
+%         disp("Game FINISH")
     end 
 
 
@@ -105,7 +150,7 @@ function bool_check = check_player_usable_ace(player_hand_value)
         bool_check = 1; 
     else
        
-        bool_check = 2; % FALSE No USeable ACE
+        bool_check = 0; % FALSE No USeable ACE
    end 
 end 
 
@@ -277,7 +322,7 @@ function [dealer_value, card_counter] = dealer_draws_card(card_deck, card_counte
    while dealer_value < 17                                      % While Dealer has < 17 Keep Drawing Cards
        
        new_card_value = card_deck(card_counter);                % Draw NEW card from deck
-       card_counter = card_couter + 1;                          % Increment Deck Counter
+       card_counter = card_counter + 1;                          % Increment Deck Counter
        
        if new_card_value == 1                                   % If new card is an ACE
            
@@ -292,13 +337,11 @@ function [dealer_value, card_counter] = dealer_draws_card(card_deck, card_counte
        
        dealer_value = dealer_value + new_card_value;            % Update Dealer Value
        
-       if usable == 1                                           % IF Dealer has usable ACE 
            
            if dealer_value > 17                                 % Does Dealer have > Soft-17
                break                                            % If Dealer has > Soft-17 then BREAK Loop 
            end            
            
-       end 
        
    end 
 

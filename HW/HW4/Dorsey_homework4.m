@@ -8,9 +8,8 @@
 
 %% Black Jack Simulator
 
-dealer_case = 1; 
+dealer_case = 2; 
 current_player_policy = ones(21,10,2); 
-
 current_player_policy(17:18, :,:) = 0;
 
 
@@ -18,6 +17,67 @@ trajectory = generate_blackjack_trajectory(current_player_policy, dealer_case);
 trajectory{end}{3}
 
 %% Monte Carlo Learning 
+
+clear all 
+clc
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%                           Initialize MC                       %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+init_policy = ones(21,10,2); 
+
+init_policy(17:21, :,:) = 0;
+new_policy = init_policy;
+
+Q = zeros(21, 10, 2, 2);
+N = zeros(21, 10, 2, 2);
+gamma = 1; 
+dealer_policy = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%                           Run MC                      %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+for eps = 1:1:500000
+    
+    traj = generate_blackjack_trajectory(init_policy, dealer_policy);
+    num_t = length(traj);
+    
+    G = 0; 
+    
+    for T = 1:1: num_t 
+        
+        state = traj{T}{1};
+        action = traj{T}{2};
+        reward = traj{T}{3};
+        new_state = traj{T}{4};
+        
+        s1 = state(1); 
+        s2 = state(2);
+        s3 = state(3);
+        
+        G = gamma*G + reward;
+        
+        N(s1, s2, s3, (action+1)) = N(s1, s2, s3, (action+1)) + 1; 
+        Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1)));
+        
+        
+        [max_val, argmax] = max(Q(s1, s2, s3, (action+1)), [], 4);
+        new_policy(s1, s2, s3) = argmax
+        
+    end 
+    
+    break
+     
+end 
+
+
+
+
+
+
 
 
 
@@ -57,7 +117,7 @@ state = [player_init_state, dealer_init_state, usable_ace_state];      % Initial
    
     % Deal Dealers Cards (according to fix Dealer Policy)
     if bust == 1                                                    % If Player ALREADY bust then Dealer already WON
-        disp("Player went BUST")
+%         disp("Player went BUST")
         final_trajectory = trajectory; 
     else                                                            % IF Player DIDN'T bust then Dealer Still needs to Draw cards 
 
@@ -67,7 +127,7 @@ state = [player_init_state, dealer_init_state, usable_ace_state];      % Initial
         trajectory{end+1} = {new_state, 0, terminal_reward, new_state};  % Return Trajectory
         final_trajectory = trajectory;
         
-        disp("Game FINISH")
+%         disp("Game FINISH")
     end 
 
 
