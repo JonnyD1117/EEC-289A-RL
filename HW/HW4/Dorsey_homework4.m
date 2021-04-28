@@ -3,16 +3,6 @@
 
 
 
-%% Black Jack Simulator
-
-dealer_case = 2; 
-current_player_policy = ones(21,10,2); 
-current_player_policy(17:18, :,:) = 0;
-
-
-trajectory = generate_blackjack_trajectory(current_player_policy, dealer_case);
-trajectory{end}{3}
-
 %% Monte Carlo Learning 
 
 clear all 
@@ -22,10 +12,9 @@ clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%                           Initialize MC                       %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init_policy = ones(21,10,2); 
-
-init_policy(17:21, :,:) = 0;
+init_policy = zeros(21,10,2); 
 new_policy = init_policy;
+
 
 Q = zeros(21, 10, 2, 2);
 N = zeros(21, 10, 2, 2);
@@ -40,7 +29,7 @@ dealer_policy = 1;
 
 for eps = 1:1:500000
     
-    traj = generate_blackjack_trajectory(init_policy, dealer_policy);
+    traj = generate_blackjack_trajectory(init_policy_ace, dealer_policy);
     num_t = length(traj);
     
     G = 0; 
@@ -61,44 +50,26 @@ for eps = 1:1:500000
 %         Return(s1,s2,s3, (action+1)) = G; 
 %         Q(s1, s2, s3, (action+1)) = mean(Return(s1, s2, s3, (action+1)))  ;
 
-        N(s1, s2, s3, (action+1)) = N(s1, s2, s3, (action+1)) + 1; 
-        Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1)));      
+        N(s1, s2, 2, (action+1)) = N(s1, s2, 2, (action+1)) + 1; 
+        Q(s1, s2, 2, (action+1)) = Q(s1, s2, 2, (action+1)) + (1/N(s1, s2, 2, (action+1)))*(G - Q(s1, s2, 2, (action+1)));      
 
- if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
-            
-            max_action = 1;
-                        
-    else
+     if Q(s1, s2, 2, 1) > Q(s1, s2, 2, 2)
 
-            max_action = 0; 
-    end
-        
-        new_policy(s1, s2, s3) = max_action;
+                max_action = 1;
+
+        else
+
+                max_action = 0; 
+        end
+
+            new_policy_ace(s1, s2, 2) = max_action;
 
 
-    end 
+        end 
     
-%     for T = 1:1: num_t
-%     state = traj{T}{1};
-%     
-%     s1 = state(1); 
-%         s2 = state(2);
-%         s3 = state(3);
-%     
-%     if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
-%             
-%             max_action = 1;
-%                         
-%     else
-% 
-%             max_action = 0; 
-%     end
-%         
-%         new_policy(s1, s2, s3) = max_action;
-%     
-%     end 
+
     
-    init_policy = new_policy;
+     init_policy_ace = new_policy_ace;
      eps
 end 
 
@@ -110,7 +81,7 @@ surf(X,Y,Q(:,:,1))
 
 %%
 
-pcolor(init_policy(:,:,2))
+pcolor(init_policy_ace(:,:,2))
 
 xlabel('Dealer Showing')
 ylabel('Player Sum')
@@ -123,7 +94,7 @@ function shuf_deck = generate_deck()
 % Generate Shuffled Deck
 
 suit_value = [1,2,3,4,5,6,7,8,9,10,10,10,10]; 
-new_deck = [suit_value, suit_value, suit_value,suit_value] ;
+new_deck = [suit_value, suit_value, suit_value, suit_value] ;
 shuf_deck = new_deck(randperm(length(new_deck)));
 
 end 
@@ -160,7 +131,7 @@ action = init_action();                                           % Randomly Sel
 % 
 %     end 
     
-            [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
+        [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
         new_state = trajectory{end}{1}; 
    
     % Deal Dealers Cards (according to fix Dealer Policy)

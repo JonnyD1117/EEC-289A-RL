@@ -2,17 +2,6 @@
 % Jonathan Dorsey 
 
 
-
-%% Black Jack Simulator
-
-dealer_case = 2; 
-current_player_policy = ones(21,10,2); 
-current_player_policy(17:18, :,:) = 0;
-
-
-trajectory = generate_blackjack_trajectory(current_player_policy, dealer_case);
-trajectory{end}{3}
-
 %% Monte Carlo Learning 
 
 clear all 
@@ -22,9 +11,8 @@ clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%                           Initialize MC                       %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init_policy = ones(21,10,2); 
+init_policy = zeros(21,10,2); 
 
-init_policy(17:21, :,:) = 0;
 new_policy = init_policy;
 
 Q = zeros(21, 10, 2, 2);
@@ -45,6 +33,7 @@ for eps = 1:1:500000
     
     G = 0; 
     
+    
     for T = 1:1: num_t 
         
         state = traj{T}{1};
@@ -64,40 +53,21 @@ for eps = 1:1:500000
         N(s1, s2, s3, (action+1)) = N(s1, s2, s3, (action+1)) + 1; 
         Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1)));      
 
- if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
-            
-            max_action = 1;
-                        
-    else
+        if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
 
-            max_action = 0; 
-    end
-        
-        new_policy(s1, s2, s3) = max_action;
+                max_action = 1;
+
+        else
+
+                max_action = 0; 
+        end
+
+            new_policy(s1, s2, s3) = max_action;
 
 
     end 
     
-%     for T = 1:1: num_t
-%     state = traj{T}{1};
-%     
-%     s1 = state(1); 
-%         s2 = state(2);
-%         s3 = state(3);
-%     
-%     if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
-%             
-%             max_action = 1;
-%                         
-%     else
-% 
-%             max_action = 0; 
-%     end
-%         
-%         new_policy(s1, s2, s3) = max_action;
-%     
-%     end 
-    
+
     init_policy = new_policy;
      eps
 end 
@@ -109,11 +79,21 @@ end
 surf(X,Y,Q(:,:,1))
 
 %%
+figure()
+pcolor(init_policy(:,:,1))
 
+xlabel('Dealer Showing')
+ylabel('Player Sum')
+
+figure()
 pcolor(init_policy(:,:,2))
 
 xlabel('Dealer Showing')
 ylabel('Player Sum')
+
+
+%%
+
 
 
 
@@ -123,45 +103,28 @@ function shuf_deck = generate_deck()
 % Generate Shuffled Deck
 
 suit_value = [1,2,3,4,5,6,7,8,9,10,10,10,10]; 
-new_deck = [suit_value, suit_value, suit_value,suit_value] ;
+new_deck = [suit_value, suit_value, suit_value, suit_value] ;
 shuf_deck = new_deck(randperm(length(new_deck)));
 
 end 
 
 function final_trajectory = generate_blackjack_trajectory(policy, dealer_policy)
 
-card_deck = generate_deck();                % Generate Shuffled Deck of Cards
-trajectory = {};                            % Initialize Empty Trajectory (Cell Array) 
+    card_deck = generate_deck();                % Generate Shuffled Deck of Cards
+    trajectory = {};                            % Initialize Empty Trajectory (Cell Array) 
 
-player_init_cards = [card_deck(1), card_deck(2)];               % Deal Player TWO cards from the top of the shuffled Deck
-dealer_init_cards = [card_deck(3), card_deck(4)];               % Deal Dealer TWO cards from the shuffled Deck
-delaer_value = card_deck(3) + card_deck(4);
-card_counter = 5;                                               % Update Card Index
+    dealer_init_cards = [card_deck(1), card_deck(2)];
 
-player_init_state = card_deck(1) + card_deck(2);                % Compute Player Initial State
-dealer_init_state = card_deck(3);                               % Compute Dealer Initial State (Only one of the two cards drawn is shown)
+    player_init_state = randi([11,21], 1); 
+    dealer_init_state = dealer_init_cards(1);
+    usable_ace_state = randi([1,2],1);
 
-usable_ace_bool = check_player_usable_ace(player_init_state);     % Check if it is possible for Player to have USABLE ACE 
-usable_ace_state = sample_usable_ace(usable_ace_bool);            % IF Player CAN have USABLE ACE, Randomly Sample whether it IS a usable ACE   
+    state = [player_init_state, dealer_init_state, usable_ace_state];      % Initialize Initial State of BlackJack Trajectory
 
-state = [player_init_state, dealer_init_state, usable_ace_state];      % Initialize Initial State of BlackJack Trajectory
-action = init_action();                                           % Randomly Select Initial Action
+    card_counter = 3;                                               % Update Card Index
 
-
-%     if action == 1                                                % If Initial Action is HIT (play through rest of game according to policy) 
-% 
-%          % Deal Players Cards (according to current Player POLICY)
-%         [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
-%         new_state = trajectory{end}{1};                             % Extract NEW state from trajectory 
-% 
-%     else                                                            % If Initial Action is STICK (end of player turn)
-% 
-%         trajectory{end + 1} = {state, 0, 0, state};
-% 
-%     end 
-    
-        [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
-        new_state = trajectory{end}{1}; 
+    [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
+    new_state = trajectory{end}{1}; 
    
     % Deal Dealers Cards (according to fix Dealer Policy)
     if bust == 1                                                    % If Player ALREADY bust then Dealer already WON
@@ -274,10 +237,9 @@ function [card_counter, trajectory, bust] = players_turn(card_deck, card_counter
     
     bust = 0;                                           % Set BUST flag to 0 
 
-    
     while true                                          % Loop Until Policy Sticks or Player BUSTs
         
-        s1 = cur_state(1);                               % Define current Player Value
+        s1 = cur_state(1);                              % Define current Player Value
         s2 = cur_state(2);                              % Define current Dealer Showing Value
         s3 = cur_state(3);                              % Define current Player Usable ACE
         
