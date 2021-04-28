@@ -1,6 +1,3 @@
-
-
-
 %% EEC 289A: Homework #4 
 % Jonathan Dorsey 
 
@@ -32,6 +29,7 @@ new_policy = init_policy;
 
 Q = zeros(21, 10, 2, 2);
 N = zeros(21, 10, 2, 2);
+Return = zeros(21, 10, 2, 2);
 gamma = 1; 
 dealer_policy = 1;
 
@@ -60,24 +58,62 @@ for eps = 1:1:500000
         
         G = gamma*G + reward;
         
+%         Return(s1,s2,s3, (action+1)) = G; 
+%         Q(s1, s2, s3, (action+1)) = mean(Return(s1, s2, s3, (action+1)))  ;
+
         N(s1, s2, s3, (action+1)) = N(s1, s2, s3, (action+1)) + 1; 
-        Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1)));
+        Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1)));      
+
+ if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
+            
+            max_action = 1;
+                        
+    else
+
+            max_action = 0; 
+    end
         
-        
-        [max_val, argmax] = max(Q(s1, s2, s3, (action+1)), [], 4);
-        new_policy(s1, s2, s3) = argmax
-        
+        new_policy(s1, s2, s3) = max_action;
+
+
     end 
     
-    break
-     
+%     for T = 1:1: num_t
+%     state = traj{T}{1};
+%     
+%     s1 = state(1); 
+%         s2 = state(2);
+%         s3 = state(3);
+%     
+%     if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
+%             
+%             max_action = 1;
+%                         
+%     else
+% 
+%             max_action = 0; 
+%     end
+%         
+%         new_policy(s1, s2, s3) = max_action;
+%     
+%     end 
+    
+    init_policy = new_policy;
+     eps
 end 
 
 
 
+%%
+[X,Y] = meshgrid(1:1:10,1:1:21);
+surf(X,Y,Q(:,:,1))
 
+%%
 
+pcolor(init_policy(:,:,2))
 
+xlabel('Dealer Showing')
+ylabel('Player Sum')
 
 
 
@@ -109,15 +145,26 @@ usable_ace_bool = check_player_usable_ace(player_init_state);     % Check if it 
 usable_ace_state = sample_usable_ace(usable_ace_bool);            % IF Player CAN have USABLE ACE, Randomly Sample whether it IS a usable ACE   
 
 state = [player_init_state, dealer_init_state, usable_ace_state];      % Initialize Initial State of BlackJack Trajectory
+action = init_action();                                           % Randomly Select Initial Action
 
-    % Deal Players Cards (according to current Player POLICY)
-    [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
+
+%     if action == 1                                                % If Initial Action is HIT (play through rest of game according to policy) 
+% 
+%          % Deal Players Cards (according to current Player POLICY)
+%         [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
+%         new_state = trajectory{end}{1};                             % Extract NEW state from trajectory 
+% 
+%     else                                                            % If Initial Action is STICK (end of player turn)
+% 
+%         trajectory{end + 1} = {state, 0, 0, state};
+% 
+%     end 
     
-    new_state = trajectory{end}{1};                             % Extract NEW state from trajectory 
+            [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
+        new_state = trajectory{end}{1}; 
    
     % Deal Dealers Cards (according to fix Dealer Policy)
     if bust == 1                                                    % If Player ALREADY bust then Dealer already WON
-%         disp("Player went BUST")
         final_trajectory = trajectory; 
     else                                                            % IF Player DIDN'T bust then Dealer Still needs to Draw cards 
 
@@ -127,7 +174,6 @@ state = [player_init_state, dealer_init_state, usable_ace_state];      % Initial
         trajectory{end+1} = {new_state, 0, terminal_reward, new_state};  % Return Trajectory
         final_trajectory = trajectory;
         
-%         disp("Game FINISH")
     end 
 
 
@@ -185,6 +231,19 @@ function usable_ace_state = sample_usable_ace(usable_ace_bool)
 
 end 
 
+function action = init_action()
+
+p = rand(); 
+
+    if p >=5
+        action = 0;
+    else
+        action = 1;
+
+    end 
+
+end 
+
 function reward = who_won(state, dealer_value)
 
 player_value = state(1); 
@@ -210,14 +269,15 @@ end
 
 function [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, init_state, policy, trajectory)
     
-    cur_state = init_state;                             % Initialize Current State
+    cur_state = init_state;                             % Initialize Current State    
     new_state = init_state;                             % Initialize New State 
     
     bust = 0;                                           % Set BUST flag to 0 
 
+    
     while true                                          % Loop Until Policy Sticks or Player BUSTs
         
-        s1 = cur_state(1);                              % Define current Player Value
+        s1 = cur_state(1);                               % Define current Player Value
         s2 = cur_state(2);                              % Define current Dealer Showing Value
         s3 = cur_state(3);                              % Define current Player Usable ACE
         
@@ -228,9 +288,7 @@ function [card_counter, trajectory, bust] = players_turn(card_deck, card_counter
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%                       PLAYER HITS                             %%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
         if policy(s1, s2, s3) == 1                      % If Policy HITS (draw new card)
-  
             new_card_value = card_deck(card_counter);   % Draw a new card from the deck 
             card_counter = card_counter + 1;            % Increment Card Counter
         
@@ -262,9 +320,8 @@ function [card_counter, trajectory, bust] = players_turn(card_deck, card_counter
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%                       PLAYER STICK                            %%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
         if policy(s1, s2, s3) == 0                      % If Policy STICKS (break loop & do not update state) 
-            
+
             trajectory{end + 1} = {cur_state, 0, 0, cur_state}; % Update MDP Trajectory     
             break                                       % BREAK from WHILE loop 
         end 
