@@ -125,34 +125,6 @@ function usable_ace_state = sample_usable_ace(usable_ace_bool)
 
 end 
 
-
-
-% function [dealer_value, card_counter] = dealer_turn(card_deck, card_counter, dealer_init_cards)
-% 
-% dealer_val = dealer_init_cards(1) + dealer_init_cards(2); 
-% 
-% 
-%     while dealer_val <17 
-%         
-%         new_card_val = card_deck(card_counter); 
-%         card_counter = card_counter + 1;
-%         
-%         if new_card_val == 1
-%             
-%             if dealer_val + 11 <=21
-%                 
-%                 new_card_val = 11; 
-%             else
-%                 new_card_val = 1 ; 
-%             end 
-%         
-%         end 
-%         
-%         dealer_val = dealer_val + new_card_val; 
-% 
-%     end 
-% end 
-
 function reward = who_won(state, dealer_value)
 
 player_value = state(1); 
@@ -175,11 +147,6 @@ player_value = state(1);
     
     reward = R;
 end 
-
-
-
-
-
 
 function [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, init_state, policy, trajectory)
     
@@ -238,36 +205,121 @@ function [card_counter, trajectory, bust] = players_turn(card_deck, card_counter
         
         if policy(s1, s2, s3) == 0                      % If Policy STICKS (break loop & do not update state) 
             
-            trajectory{end + 1} = {cur_state, 0, 0, cur_state}; % Update MDP Trajectory                
+            trajectory{end + 1} = {cur_state, 0, 0, cur_state}; % Update MDP Trajectory     
+            break                                       % BREAK from WHILE loop 
         end 
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-
     end 
 
 
 
 end 
 
+function [] = dealers_turn(card_deck, card_counter, dealer_cards, dealer_policy)
 
-function [] = dealers_turn()
+% General Dealer Policy: STICK if dealer value >= 17
+
+% Check if Dealer has Soft-17 
 
 
+
+
+% Dealer Policy == 1 
+
+    % Check if Dealer Initial Cards  == Soft-17
+    % IF: True : HIT
+    % ELSEIF: dealer_value >= 17 : STICK
+    % ELSE: 
+    
+        % WHILE: dealer_value < 17: HIT             
+            
+            % IF Dealer Value < 17: HIT
+            % ELSEIF Dealer Value == Soft-17 HIT
+            % ELSE: STICK
+
+
+
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+
+% Dealer Policy == 2
+
+    % Check if Dealer Initial Cards  == Soft-17
+    % IF: True : Stick
+    
+    
+    % Dealer Draws a Card 
+    % Check if Dealer has Usable ACE
+
+
+    % IF Dealer Value < 17: HIT
+    % ELSEIF Dealer Value == Soft-17 STICK
+    % ELSE: STICK
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
     soft_17 = check_dealer_soft_seventeen(dealer_init_cards);
 
