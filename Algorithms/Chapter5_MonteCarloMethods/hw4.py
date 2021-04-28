@@ -11,32 +11,32 @@ import copy
 # STATES: (Sum of Player Card, Dealer Showing Card, Player Useable ACE) 
 # ACTIONS: (Player HIT, Player STICK)
 # DEALER ACTIONs: Dealer Must HIT until dealer value >= 17 
-    # 1) Dealer HITS if dealer value == 17 
-    # 2) Dealer STICKS if deal value == 17 
-    
+#    # 1) Dealer HITS if dealer value == 17 
+#    # 2) Dealer STICKS if deal value == 17 
+#    
 # REWARDS: 
 # Rewards are given at the end of each episodes (aka game) 
 # IF Player... 
-    # 1) Win: R = +1
-    # 2) Loss: R = -1
-    # 3) Draw: R = 0 
-
+#    # 1) Win: R = +1
+#    # 2) Loss: R = -1
+#    # 3) Draw: R = 0 
+#
 # DEFINITION: Useable ACE - IF an ACE can be valued as an 11 (instead of 1) withOUT going bust ELSE: ACE is unuseable 
-
+#
 # EXPLORING STARTS: 
 # Randomly initialize games with Uniformly Random STATES and continue playing until terminal state is achieved (aka game results in a win, loss, or draw)
-
+#
 # INITIAL POLICY:
 #  PI(s) = IF Player_State >= 20 && < =21: STICK ELSE: HIT 
-
+#
 # HOW GAME IS WON: 
-    # 1) Win: Player is closer/equal to 21 (without going over) than dealer 
-    # 2) Loss: Dealer is closer/equal to 21 (wihtout going over) than player 
-    # 3) Draw: Player & Dealer Have SAME value OR both have 21 
-
-# card_values = {"A": (1,11), "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "J": 10, "Q": 10, "K": 10 }
-card_values = {1: (1,11), 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 10, 12: 10, 13: 10 }
-policy_dict = {"hit": 0, "stick": 1}
+#    # 1) Win: Player is closer/equal to 21 (without going over) than dealer 
+#    # 2) Loss: Dealer is closer/equal to 21 (wihtout going over) than player 
+#    # 3) Draw: Player & Dealer Have SAME value OR both have 21 
+#
+# # card_values = {"A": (1,11), "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "J": 10, "Q": 10, "K": 10 }
+# card_values = {1: (1,11), 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 10, 12: 10, 13: 10 }
+# policy_dict = {"hit": 0, "stick": 1}
 
 def dealer_action(state, deck_of_cards, card_cnt, dealer_policy=1):
     """
@@ -184,7 +184,7 @@ def generate_blackjack_episode(dealer_policy):
     # Initialize States Randomly (Exploring Starts)
     useable_ace_state =  True if random.randint(0,1) == 0 else False
 
-    state = [random.randint(4,13), random.randint(1,10), useable_ace_state]                 
+    state = [random.randint(0,13), random.randint(1,10), useable_ace_state]                 
     # print(f"Initial State {state}")
     # print("  ")
     
@@ -203,22 +203,6 @@ def generate_blackjack_episode(dealer_policy):
 
 if __name__ == '__main__':
 
-    mean = []
 
-    for j in range(1000): 
-
-        counter = 0 
-
-        for k in range(100000): 
-
-            episode_traj = generate_blackjack_episode(dealer_policy=1)
-
-            init_ace = episode_traj[0][3][2]
-            final_ace = episode_traj[-1][3][2]
-
-            if init_ace is False and final_ace is True: 
-                counter += 1
-        mean.append(counter)
-
-        print(f"Mean {np.mean(mean)}")
-
+    episode_traj = generate_blackjack_episode(dealer_policy=1)
+    print(episode_traj)
