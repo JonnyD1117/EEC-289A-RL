@@ -9,23 +9,15 @@
 %% Black Jack Simulator
 
 dealer_case = 1; 
-current_player_policy = ones(21,10,2);
+current_player_policy = ones(21,10,2); 
+
+current_player_policy(17:18, :,:) = 0;
 
 
-trajectory = generate_blackjack_trajectory(current_player_policy, dealer_case)
-
+trajectory = generate_blackjack_trajectory(current_player_policy, dealer_case);
+trajectory{end}{3}
 
 %% Monte Carlo Learning 
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -40,7 +32,7 @@ shuf_deck = new_deck(randperm(length(new_deck)));
 
 end 
 
-function trajectory = generate_blackjack_trajectory(current_player_policy, dealer_case)
+function final_trajectory = generate_blackjack_trajectory(policy, dealer_policy)
 
 card_deck = generate_deck();                % Generate Shuffled Deck of Cards
 trajectory = {};                            % Initialize Empty Trajectory (Cell Array) 
@@ -56,22 +48,30 @@ dealer_init_state = card_deck(3);                               % Compute Dealer
 usable_ace_bool = check_player_usable_ace(player_init_state);     % Check if it is possible for Player to have USABLE ACE 
 usable_ace_state = sample_usable_ace(usable_ace_bool);            % IF Player CAN have USABLE ACE, Randomly Sample whether it IS a usable ACE   
 
-cur_state = [player_init_state, dealer_init_state, usable_ace_state];      % Initialize Initial State of BlackJack Trajectory
-new_state = cur_state; 
+state = [player_init_state, dealer_init_state, usable_ace_state];      % Initialize Initial State of BlackJack Trajectory
 
-% Deal Players Cards (according to current Player POLICY)
-
-   
-% Deal Dealers Cards (according to fix Dealer Policy)
-
+    % Deal Players Cards (according to current Player POLICY)
+    [card_counter, trajectory, bust] = players_turn(card_deck, card_counter, state, policy, trajectory);
     
+    new_state = trajectory{end}{1};                             % Extract NEW state from trajectory 
+   
+    % Deal Dealers Cards (according to fix Dealer Policy)
+    if bust == 1                                                    % If Player ALREADY bust then Dealer already WON
+        disp("Player went BUST")
+        final_trajectory = trajectory; 
+    else                                                            % IF Player DIDN'T bust then Dealer Still needs to Draw cards 
 
-% Determine Who WON 
-    terminal_reward = who_won(new_state, dealer_value);
+        [dealer_value, card_counter] = dealers_turn(card_deck, card_counter, dealer_init_cards, dealer_policy);     % Dealer Draws Cards until Dealer_value >=17 
 
-% Return Trajectory 
+        terminal_reward = who_won(new_state, dealer_value);         % Determine Who WON 
+        trajectory{end+1} = {new_state, 0, terminal_reward, new_state};  % Return Trajectory
+        final_trajectory = trajectory;
+        
+        disp("Game FINISH")
+    end 
 
-trajectory{end+1} = {cur_state, 0, terminal_reward, new_state};
+
+
 
 end
 
@@ -101,7 +101,7 @@ function bool_check = check_player_usable_ace(player_hand_value)
         bool_check = 1; 
     else
        
-        bool_check = 0;
+        bool_check = 0; % FALSE No USeable ACE
    end 
 end 
 
@@ -113,13 +113,13 @@ function usable_ace_state = sample_usable_ace(usable_ace_bool)
         p = rand(); 
 
         if p <= .5
-            usable_ace_state = 0 ;
+            usable_ace_state = 2 ;
 
         else 
             usable_ace_state = 1 ;
         end 
     else 
-        usable_ace_state = 0;
+        usable_ace_state = 2;
     end 
 
 
@@ -214,143 +214,89 @@ function [card_counter, trajectory, bust] = players_turn(card_deck, card_counter
 
 end 
 
-function [] = dealers_turn(card_deck, card_counter, dealer_cards, dealer_policy)
+function [dealer_value, card_counter] = dealers_turn(card_deck, card_counter, dealer_cards, dealer_policy)
 
-% General Dealer Policy: STICK if dealer value >= 17
-
-% Check if Dealer has Soft-17 
-
+dealer_value = dealer_cards(1) + dealer_cards(2);               % Dealers Initial Card Value
+soft_17_check  = check_dealer_soft_seventeen(dealer_cards);     % Check if Initial Dealer Cards are Soft-17
 
 
+if dealer_policy == 1                                           % Under Dealer CASE #1
+    
+    if soft_17_check == 1                                       % IF Dealer has Soft-17: HIT                       
+        new_card_val = card_deck(card_counter);                 % Draw Card From Deck
+        card_counter = card_counter + 1;                        % Increment Card Counter 
+        dealer_value = 17 +  new_card_val;                      % IF dealer has Soft-17 update value
+    
+    elseif soft_17_check == 0 && dealer_value >= 17             % IF Dealer Doesn't Have Soft-17 BUT has a value >=17: STICK
+        dealer_value = dealer_value;
+        
+    else                                                        % IF Dealer does NOT have Soft-17 but has value < 17 : HIT
+        
+        [dealer_value, card_counter] = dealer_draws_card(card_deck, card_counter, dealer_value);
+    end 
+    
+else % dealer_polcy == 2 
+    
+    if soft_17_check == 1                                       % IF Dealer has Soft-17: STICK                       
+        dealer_value = dealer_value; 
+        
+    elseif soft_17_check == 0 && dealer_value >= 17             % IF Dealer Doesn't Have Soft-17 BUT has a value >=17: STICK
+        dealer_value = dealer_value;
+        
+    else                                                        % IF Dealer does NOT have Soft-17 but has value < 17; HIT
+        
+        [dealer_value, card_counter] = dealer_draws_card(card_deck, card_counter, dealer_value);
+    end     
+    
+    
+end 
 
 % Dealer Policy == 1 
 
-    % Check if Dealer Initial Cards  == Soft-17
+    % Check if Dealer Initial Cards == Soft-17
     % IF: True : HIT
     % ELSEIF: dealer_value >= 17 : STICK
     % ELSE: 
     
         % WHILE: dealer_value < 17: HIT             
+            % Check if Dealer has USABLE ACE
             
-            % IF Dealer Value < 17: HIT
-            % ELSEIF Dealer Value == Soft-17 HIT
-            % ELSE: STICK
-
-
-
-
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-
-% Dealer Policy == 2
-
-    % Check if Dealer Initial Cards  == Soft-17
-    % IF: True : Stick
-    
-    
-    % Dealer Draws a Card 
-    % Check if Dealer has Usable ACE
-
-
-    % IF Dealer Value < 17: HIT
-    % ELSEIF Dealer Value == Soft-17 STICK
-    % ELSE: STICK
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    soft_17 = check_dealer_soft_seventeen(dealer_init_cards);
-
-    if dealer_case == 1             % HIT on soft-17
-        
-        if soft_17 == 1
-            
-            dealer_value = dealer_value + card_deck(card_counter);
-            
-        else
-            
-            [dealer_value, card_counter] = dealer_turn(card_deck, card_counter, dealer_init_cards);
-            
-        end 
-        
-    
-    end     
-        
-    if dealer_case == 2             % STICK on soft-17
-        
-        if soft_17 == 1
-            dealer_value = dealer_value;
-        else
-            [dealer_value, card_counter] = dealer_turn(card_deck, card_counter, dealer_init_cards);
-        end     
-    end 
-
-
+            % IF ACE is usable: Check if new_dealer_val > 17 (AKA soft-18 or greater) STICK
+            % ELSE: HIT
+                
+            % IF ACE is NOT usable: 
 
 end 
 
+function [dealer_value, card_counter] = dealer_draws_card(card_deck, card_counter, dealer_value)
+
+   while dealer_value < 17                                      % While Dealer has < 17 Keep Drawing Cards
+       
+       new_card_value = card_deck(card_counter);                % Draw NEW card from deck
+       card_counter = card_counter + 1;                          % Increment Deck Counter
+       
+       if new_card_value == 1                                   % If new card is an ACE
+           
+            if dealer_value <= 10                               % Test Whether ACE is Usable
+                
+                usable = 1; 
+                new_card_value = 11;                            % IF usable, card value == 11
+            else 
+                usable = 0;                                     % ELSE card value == 1
+            end 
+       end 
+       
+       dealer_value = dealer_value + new_card_value;            % Update Dealer Value
+       
+           
+           if dealer_value > 17                                 % Does Dealer have > Soft-17
+               break                                            % If Dealer has > Soft-17 then BREAK Loop 
+           end            
+           
+       
+   end 
+
+end 
 
 
 
