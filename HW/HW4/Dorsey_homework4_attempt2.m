@@ -3,24 +3,6 @@
 
 %% NOTE to TA: 
 
-While I understand the concept of Monte Carlo Learning and how we can use
-Sample Averages of Returns to compute the values of episodic tasks. I
-have not been able to replicate Fig. 5.2 from Sutton & Barto. 
-
-I think that this is either due to some error in how the game of
-BlackJack is simulated, or due to the computation of Monte Carlo based
-Policies and Value Functions. 
-
-To the best of my knowledge, my implementation of BlackJack will test
-every state (via random initialization) and will proceed to play the game
-until Player has gone "bust" or "stick", and the dealer has taken a turn.
-After this the game will compute the terminal reward (aka who won [dealer or player])
-and will return the trajectory consisting of... 
-
-Trajectory [(prev_state), action_taken, reward_recieved, (new_state)...]
-
-For all steps taken in the MDP 
-
 
 
 
@@ -37,16 +19,14 @@ clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%                           Initialize MC                       %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init_policy = zeros(21,10,2); 
-
-new_policy = init_policy;
+policy = zeros(21,10,2); 
 
 Q = zeros(21, 10, 2, 2);
 N = zeros(21, 10, 2, 2);
-Return = zeros(21, 10, 2, 2);
 gamma = 1; 
 dealer_policy = 1;
 
+V = Q;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%                           Run MC                      %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,14 +34,13 @@ dealer_policy = 1;
 
 for eps = 1:1:500000
     
-    traj = generate_blackjack_trajectory(init_policy, dealer_policy);
+    traj = generate_blackjack_trajectory(policy, dealer_policy);   % Generate Black Jack Trajectories
     num_t = length(traj);
     
-    G = 0; 
+    G = 0;                                                              % Initialize Return = 0 
     
-    
-    for T = 1:1: num_t 
-        
+    for T = 1:1: num_t                          % Iterate Over Generated Trajectory to Compute Value Function Updates                                         
+
         state = traj{T}{1};
         action = traj{T}{2};
         reward = traj{T}{3};
@@ -71,31 +50,23 @@ for eps = 1:1:500000
         s2 = state(2);
         s3 = state(3);
         
-        G = gamma*G + reward;
-        
-%         Return(s1,s2,s3, (action+1)) = G; 
-%         Q(s1, s2, s3, (action+1)) = mean(Return(s1, s2, s3, (action+1)))  ;
+        G = gamma*G + reward;                   % Compute Return 
 
-        N(s1, s2, s3, (action+1)) = N(s1, s2, s3, (action+1)) + 1; 
-        Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1)));      
+        N(s1, s2, s3, (action+1)) = N(s1, s2, s3, (action+1)) + 1;      % Number of Times state was visited (Incremental Form) 
+        Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1))); % Value Function Update (Incremental Form)      
 
-        if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
-
-                argmax = 1;
-
+        if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)                          % Determine which state has the maximum value
+                argmax = 1;         
         else
-
                 argmax = 0; 
         end
-
-            new_policy(s1, s2, s3) = argmax;
-
-
+            policy(s1, s2, s3) = argmax;                            % Set Policy (for given state) equal to the argmax of the Q(s,A) 
+        
+        V(s1, s2, s3) = max(Q(s1, s2, s3, 1), Q(s1, s2, s3, 2));
     end 
     
 
-    init_policy = new_policy;
-     eps
+  eps
 end 
 
 
@@ -103,7 +74,7 @@ end
 
 figure()
 [X,Y] = meshgrid(1:1:10,1:1:21);
-surf(Y,X,Q(:,:,1))
+surf(Y,X,V(:,:,1))
 
 ylabel("Dealer Showing")
 xlabel('Player Sum')
@@ -123,14 +94,14 @@ title("Usable-Ace (Soft-17 Case #1)")
 
 
 figure()
-pcolor(init_policy(:,:,1))
+pcolor(policy(:,:,1))
 
 xlabel('Dealer Showing')
 ylabel('Player Sum')
 title("No Usable-Ace (Soft-17 Case #1)")
 
 figure()
-pcolor(init_policy(:,:,2))
+pcolor(policy(:,:,2))
 
 xlabel('Dealer Showing')
 ylabel('Player Sum')
@@ -143,15 +114,13 @@ title("Usable-Ace (Soft-17 Case #1)")
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%                           Initialize MC                       %%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init_policy = zeros(21,10,2); 
-
-new_policy = init_policy;
+policy = zeros(21,10,2); 
 
 Q = zeros(21, 10, 2, 2);
 N = zeros(21, 10, 2, 2);
-Return = zeros(21, 10, 2, 2);
 gamma = 1; 
 dealer_policy = 2;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%                           Run MC                      %%%%%%%
@@ -160,14 +129,13 @@ dealer_policy = 2;
 
 for eps = 1:1:500000
     
-    traj = generate_blackjack_trajectory(init_policy, dealer_policy);
+    traj = generate_blackjack_trajectory(policy, dealer_policy);   % Generate Black Jack Trajectories
     num_t = length(traj);
     
-    G = 0; 
+    G = 0;                                                              % Initialize Return = 0 
     
-    
-    for T = 1:1: num_t 
-        
+    for T = 1:1: num_t                          % Iterate Over Generated Trajectory to Compute Value Function Updates                                         
+
         state = traj{T}{1};
         action = traj{T}{2};
         reward = traj{T}{3};
@@ -177,31 +145,22 @@ for eps = 1:1:500000
         s2 = state(2);
         s3 = state(3);
         
-        G = gamma*G + reward;
-        
-%         Return(s1,s2,s3, (action+1)) = G; 
-%         Q(s1, s2, s3, (action+1)) = mean(Return(s1, s2, s3, (action+1)))  ;
+        G = gamma*G + reward;                   % Compute Return 
 
-        N(s1, s2, s3, (action+1)) = N(s1, s2, s3, (action+1)) + 1; 
-        Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1)));      
+        N(s1, s2, s3, (action+1)) = N(s1, s2, s3, (action+1)) + 1;      % Number of Times state was visited (Incremental Form) 
+        Q(s1, s2, s3, (action+1)) = Q(s1, s2, s3, (action+1)) + (1/N(s1, s2, s3, (action+1)))*(G - Q(s1, s2, s3, (action+1))); % Value Function Update (Incremental Form)      
 
-        if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)
-
-                argmax = 1;
-
+        if Q(s1, s2, s3, 1) > Q(s1, s2, s3, 2)                          % Determine which state has the maximum value
+                argmax = 1;         
         else
-
                 argmax = 0; 
         end
-
-            new_policy(s1, s2, s3) = argmax;
-
+            policy(s1, s2, s3) = argmax;                            % Set Policy (for given state) equal to the argmax of the Q(s,A) 
 
     end 
     
 
-    init_policy = new_policy;
-     eps
+  eps;
 end 
 
 
@@ -227,14 +186,14 @@ title("Usable-Ace (Soft-17 Case #2)")
 
 
 figure()
-pcolor(init_policy(:,:,1))
+pcolor(policy(:,:,1))
 
 xlabel('Dealer Showing')
 ylabel('Player Sum')
 title("No Usable-Ace (Soft-17 Case #2)")
 
 figure()
-pcolor(init_policy(:,:,2))
+pcolor(policy(:,:,2))
 
 xlabel('Dealer Showing')
 ylabel('Player Sum')
