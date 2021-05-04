@@ -14,7 +14,7 @@ num_episodes = 500;                 % Number of Episodes
 num_runs = 100;                    % Number of Runs made to compute "average" reward for given number of episodes
 
 epsilon = .1;                       % Epsilon-Greedy Exploration Probability 
-gamma = .99;                          % Discount Factor 
+gamma = 1;                          % Discount Factor 
 alpha = 0.5;                        % Learning Rate  
 
 num_actions = 4;                    % Number of Actions possible from each state
@@ -27,20 +27,20 @@ rewards_table = zeros(num_runs, num_episodes);
 cliff_zone = zeros(4, 12); % Initialize Cliff Zone to zeros 
 cliff_zone(4, 2:11) = 1;            % Seed Cliff Zone with 1's where cliff exists
 
-init_action = [];
+Q = zeros(4, 12 ,num_actions);
+    Q(4, 12,:) = 0;
 
 for run = 1:1:num_runs              % Iterate over Total number of averaging RUNS 
     disp("RUN")
     run
 
-    Q = ones(4, 12 ,num_actions);
-    Q(4, 12,:) = 0;
+%     Q = zeros(4, 12 ,num_actions);
+%     Q(4, 12,:) = 0;
     
     for eps = 1:1:num_episodes      % Iterate over Total number of Episodes 
         disp("Num. Episodes")
         eps
         
-%         term_flag = 0;                                                                  % Set Terminal Flag -> 0                                     
         reward_sum = 0 ;                                                                % Set Reward_SUM to zero 
         state = [4, 1];                                                                 % Initialize START State 
         state_x = 4;                                                                    % Get X Position 
@@ -48,10 +48,12 @@ for run = 1:1:num_runs              % Iterate over Total number of averaging RUN
         
         action = action_selection(state, Q, epsilon);                                   % Eps-Greedy Action Selection 
 
-        while 1 == 1                                                            % Loop UNTIL state == terminal state 
-            new_state = apply_action(state, action);                                    % Given Initial action Compute NEW state            
-            [new_state, state_valid] = check_valid_state(new_state, state);      % Check whether NEW state is a valid state or NOT 
+        while true 
+            state_x = state(1);                                                                    % Get X Position 
+            state_y = state(2);
             
+            % Loop UNTIL state == terminal state 
+            new_state = apply_action(state, action);                                    % Given Initial action Compute NEW state                        
             state_new_x = new_state(1);         % Get X Pos from Updated State
             state_new_y = new_state(2);         % Get Y Pos from Updated State 
             
@@ -67,28 +69,27 @@ for run = 1:1:num_runs              % Iterate over Total number of averaging RUN
                 
             else                                % If state is NOT on the Cliff 
                 R = -1;                         % IF state is NOT on the cliff assign reward of -1 for all transitions 
-            end 
+            end             
             
             reward_sum = reward_sum + R;        % Update the Reward SUM at each step of Episode 
             
             action_prime = action_selection(new_state, Q, epsilon);      % Eps-Greedy Action Selection 
-            Q(state_x,state_y ,action) = Q(state_x,state_y ,action) + alpha*(R + gamma*Q(state_new_x, state_new_y, action_prime) - Q(state_x, state_y ,action)); % Update Q-Function according to TD-0 target
- 
+            Q(state_x, state_y ,action) = Q(state_x,state_y ,action) + alpha*(R + gamma*Q(state_new_x, state_new_y, action_prime) - Q(state_x, state_y ,action)); % Update Q-Function according to TD-0 target
+  
             Q(4, 12,:) = 0;                 % Make sure Q(term_state, :) -> 0 
 
             if state_new_x == 4 && state_new_y == 12    % If state is Terminal State 
-                break           
+                break  
             end
             
             state = new_state; 
             action = action_prime; 
-            cnt = cnt + 1; 
-
         end  
         rewards_table(run, eps)  = reward_sum;      % Update Reward Table to Compute Average Reward Sums late 
     end     
 end 
 
+% rewards_table = movmean(rewards_table, 10);
 
 avg_reward_sum = zeros(1, num_episodes);
 
@@ -98,39 +99,247 @@ avg_reward_sum(i) = mean(rewards_table(:, i));
 end 
 
 
-figure(1)
-plot(avg_reward_sum)
+% figure(1)
+% plot(avg_reward_sum)
+% xlabel("Number of Episodes")
+% ylabel("Sum of Rewards")
+% title("SARA' Performance: Cliff Walking")
+% 
+
+
+
+sarsa_mov_avg = movmean(avg_reward_sum, 15);
+% figure(2)
+% plot(mov_avg)
+% xlabel("Number of Episodes")
+% ylabel("Sum of Rewards")
+% title("SARA' Performance: Cliff Walking")
+
+% Q-Learning 
+
+
+% clear all 
+% clc
+
+num_episodes = 500;                 % Number of Episodes
+num_runs = 100;                    % Number of Runs made to compute "average" reward for given number of episodes
+
+epsilon = .1;                       % Epsilon-Greedy Exploration Probability 
+gamma = 1;                          % Discount Factor 
+alpha = 0.5;                        % Learning Rate  
+
+num_actions = 4;                    % Number of Actions possible from each state
+
+start_state = [4,1];                % 
+goal_state = [4, 12]; 
+
+rewards_table = zeros(num_runs, num_episodes);
+
+cliff_zone = zeros(4, 12); % Initialize Cliff Zone to zeros 
+cliff_zone(4, 2:11) = 1;            % Seed Cliff Zone with 1's where cliff exists
+
+Q = zeros(4, 12 ,num_actions);
+    Q(4, 12,:) = 0;
+
+for run = 1:1:num_runs              % Iterate over Total number of averaging RUNS 
+    disp("RUN")
+    run
+
+%     Q = zeros(4, 12 ,num_actions);
+%     Q(4, 12,:) = 0;
+    
+    for eps = 1:1:num_episodes      % Iterate over Total number of Episodes 
+        disp("Num. Episodes")
+        eps
+        
+        reward_sum = 0 ;                                                                % Set Reward_SUM to zero 
+        state = [4, 1];                                                                 % Initialize START State 
+        state_x = 4;                                                                    % Get X Position 
+        state_y = 1;                                                                    % Get Y Position 
+        
+
+        while true 
+            action = action_selection(state, Q, epsilon);                                   % Eps-Greedy Action Selection 
+
+            state_x = state(1);                                                                    % Get X Position 
+            state_y = state(2);
+            
+            % Loop UNTIL state == terminal state 
+            new_state = apply_action(state, action);                                    % Given Initial action Compute NEW state                        
+            state_new_x = new_state(1);         % Get X Pos from Updated State
+            state_new_y = new_state(2);         % Get Y Pos from Updated State 
+            
+            on_cliff = cliff_zone(state_new_x, state_new_y); % Check if state is ON the Cliff
+            
+            if on_cliff == 1                    % If state is ON the Cliff 
+                
+                R = -100;                       % Compute CLIFF Reward 
+                state_new_x = 4;                % Send Agent Back to Starting X Position 
+                state_new_y = 1;                % Send Agent Back to Starting Y Position 
+                
+                new_state = [state_new_x, state_new_y]; 
+                
+            else                                % If state is NOT on the Cliff 
+                R = -1;                         % IF state is NOT on the cliff assign reward of -1 for all transitions 
+            end             
+            
+            reward_sum = reward_sum + R;        % Update the Reward SUM at each step of Episode 
+            
+            action_prime = action_selection(new_state, Q, epsilon);      % Eps-Greedy Action Selection 
+            Q(state_x, state_y ,action) = Q(state_x,state_y ,action) + alpha*(R + gamma*max(Q(state_new_x, state_new_y, :)) - Q(state_x, state_y ,action)); % Update Q-Function according to TD-0 target
+  
+            Q(4, 12,:) = 0;                 % Make sure Q(term_state, :) -> 0 
+
+            if state_new_x == 4 && state_new_y == 12    % If state is Terminal State 
+                break  
+            end
+            
+            state = new_state; 
+        end  
+        rewards_table(run, eps)  = reward_sum;      % Update Reward Table to Compute Average Reward Sums late 
+    end     
+end 
+
+
+avg_reward_sum = zeros(1, num_episodes);
+% rewards_table = movmean(rewards_table, 10);
+
+for i = 1:1:num_episodes
+avg_reward_sum(i) = mean(rewards_table(:, i)); 
+
+end 
+
+
+% figure(1)
+% plot(avg_reward_sum)
+% xlabel("Number of Episodes")
+% ylabel("Sum of Rewards")
+% title("SARA' Performance: Cliff Walking")
+% 
+
+
+
+mov_avg = movmean(avg_reward_sum, 15);
+figure(2)
+hold on 
+plot(mov_avg)
+plot(sarsa_mov_avg)
+
+xlim([0,500])
+ylim([-100,-20])
 xlabel("Number of Episodes")
 ylabel("Sum of Rewards")
-title("SARA' Performance: Cliff Walking")
+title(" ' Performance: Cliff Walking")
+%% Expected SARSA'
+
+num_episodes = 500;                 % Number of Episodes
+num_runs = 50;                    % Number of Runs made to compute "average" reward for given number of episodes
+
+epsilon = .1;                       % Epsilon-Greedy Exploration Probability 
+gamma = 1;                          % Discount Factor 
+alpha = 0.5;                        % Learning Rate  
+
+num_actions = 4;                    % Number of Actions possible from each state
+
+start_state = [4,1];                % 
+goal_state = [4, 12]; 
+
+rewards_table = zeros(num_runs, num_episodes);
+
+cliff_zone = zeros(4, 12); % Initialize Cliff Zone to zeros 
+cliff_zone(4, 2:11) = 1;            % Seed Cliff Zone with 1's where cliff exists
+
+Q = zeros(4, 12 ,num_actions);
+    Q(4, 12,:) = 0;
+
+for run = 1:1:num_runs              % Iterate over Total number of averaging RUNS 
+    disp("RUN")
+    run
+
+%     Q = zeros(4, 12 ,num_actions);
+%     Q(4, 12,:) = 0;
+    
+    for eps = 1:1:num_episodes      % Iterate over Total number of Episodes 
+        disp("Num. Episodes")
+        eps
+        
+        reward_sum = 0 ;                                                                % Set Reward_SUM to zero 
+        state = [4, 1];                                                                 % Initialize START State 
+        state_x = 4;                                                                    % Get X Position 
+        state_y = 1;                                                                    % Get Y Position 
+        
+
+        while true 
+            action = action_selection(state, Q, epsilon);                                   % Eps-Greedy Action Selection 
+
+            state_x = state(1);                                                                    % Get X Position 
+            state_y = state(2);
+            
+            % Loop UNTIL state == terminal state 
+            new_state = apply_action(state, action);                                    % Given Initial action Compute NEW state                        
+            state_new_x = new_state(1);         % Get X Pos from Updated State
+            state_new_y = new_state(2);         % Get Y Pos from Updated State 
+            
+            on_cliff = cliff_zone(state_new_x, state_new_y); % Check if state is ON the Cliff
+            
+            if on_cliff == 1                    % If state is ON the Cliff 
+                
+                R = -100;                       % Compute CLIFF Reward 
+                state_new_x = 4;                % Send Agent Back to Starting X Position 
+                state_new_y = 1;                % Send Agent Back to Starting Y Position 
+                
+                new_state = [state_new_x, state_new_y]; 
+                
+            else                                % If state is NOT on the Cliff 
+                R = -1;                         % IF state is NOT on the cliff assign reward of -1 for all transitions 
+            end             
+            
+            reward_sum = reward_sum + R;        % Update the Reward SUM at each step of Episode 
+            
+            action_prime = action_selection(new_state, Q, epsilon);      % Eps-Greedy Action Selection 
+            
+            expected_targ = Expected_Sarsa_Return(new_state, Q, epsilon);
+            
+            Q(state_x, state_y ,action) = Q(state_x,state_y ,action) + alpha*(R + gamma*expected_targ - Q(state_x, state_y ,action)); % Update Q-Function according to TD-0 target
+  
+            Q(4, 12,:) = 0;                 % Make sure Q(term_state, :) -> 0 
+
+            if state_new_x == 4 && state_new_y == 12    % If state is Terminal State 
+                break  
+            end
+            
+            state = new_state; 
+        end  
+        rewards_table(run, eps)  = reward_sum;      % Update Reward Table to Compute Average Reward Sums late 
+    end     
+end 
+
+
+avg_reward_sum = zeros(1, num_episodes);
+% rewards_table = movmean(rewards_table, 10);
+
+for i = 1:1:num_episodes
+avg_reward_sum(i) = mean(rewards_table(:, i)); 
+
+end 
+
+
+
+
+mov_avg = movmean(avg_reward_sum, 15);
+figure(2)
+hold on 
+plot(mov_avg)
+% plot(sarsa_mov_avg)
+
+xlim([0,500])
+ylim([-100,-20])
+xlabel("Number of Episodes")
+ylabel("Sum of Rewards")
+title(" Expected SARSA' Performance: Cliff Walking")
 
 
 %% Function Definitions 
-
-
-function [state, state_valid] = check_valid_state(cur_state, prev_state)
-    
-    x_state = cur_state(1);         % Obtain X Position in Grid World for NEW position
-    y_state = cur_state(2);         % Obtain Y Position in Grid World for NEW position
-
-    if x_state > 4 || y_state > 12      % IF X or Y states are larger than max Grid World Dimensions -> invalid state (return previous state)
-        
-        state_valid = 0; 
-        state = prev_state;
-        
-    elseif x_state < 1 || y_state < 1           % IF X or Y states are smaller than min Grid World Dimensions -> invalid state (return previous state)
-        
-        state_valid = 0; 
-        state = prev_state;        
-        
-    else % State ->  VALID
-        
-        state = cur_state;
-        state_valid = 1; 
-        
-    end 
-
-end 
 
 function action_to_take = action_selection(state, Q_func, eps)
     
@@ -139,7 +348,7 @@ function action_to_take = action_selection(state, Q_func, eps)
 
     sample = rand();                % Randomly Sample to determine whether action selection is greedy or random
     
-    if sample <= eps                % Selection action Randomly 
+    if sample < eps                % Selection action Randomly 
         action_to_take = randi([1,4]); 
         
     else                            % Selection Action Greedily
@@ -171,7 +380,36 @@ function new_state = apply_action(cur_state, action)
             
     end 
 
+    
+    x_state = max(1,x_state);
+    x_state = min(4, x_state); 
+    
+    y_state = max(1,y_state);
+    y_state = min(12, y_state); 
+        
     new_state = [x_state, y_state];         % Create NEW State 
 end 
 
+function target = Expected_Sarsa_Return(new_state, Q_func, eps)
 
+new_state_x = new_state(1);
+new_state_y = new_state(2);
+
+[max_val, argmax] = max(Q_func(new_state_x, new_state_y, :)); 
+
+target = 0; 
+
+    for i = 1:1:4
+
+        if i == argmax
+            pi = 1-eps;
+
+        else
+
+            pi = eps*(1);
+        end 
+
+        target = target + (pi*Q_func(new_state_x, new_state_y, i));
+
+    end 
+end 
