@@ -71,29 +71,26 @@ title("1000-State Random Walk");
 num_eps = 100000; 
 alpha = 2*10^(-5);
 
-policy = ones(1,10);
-
 W = zeros(1,10);
 
-value_mc = .5*ones(1, 10);
-
-while true
+for eps = 1:1:num_eps
     delta = 0 ; 
     
-    traj = generate_trajectory(policy); 
-    
+    traj = generate_trajectory();     
     num_state_in_traj = length(traj(:,1));
     
-    
-    delta = max(delta, abs(v - value_mc(s))); 
-    
-    if delta < theta_mc      
-        break 
+    for steps = 1:1:(num_state_in_traj-1)
+            W = W + alpha(G_t - value_function(state, W))*state;
     end 
+    
+    
+    
+%     delta = max(delta, abs(v - value_mc(s))); 
+%     
+%     if delta < theta_mc      
+%         break 
+%     end 
 end 
-
-
-
 
 
 
@@ -117,7 +114,7 @@ function r = mc_reward_func(state)
 
     if state == 1
         r = -1;
-    elseif state == 11 
+    elseif state == 12
         r = 1;     
     else
         r = 0 ; 
@@ -125,32 +122,88 @@ function r = mc_reward_func(state)
 
 end 
 
-
-function traj = generate_trajectory(init_state, current_policy)
+function traj = generate_trajectory()
 
     term_flag = false;                      % Initialize Termination Flag -> False
     temp_traj = [] ;                        % Create Empty Matrix for trajectory transitions
     
-    state = init_state;                     % Initialize first state
-    action = current_policy(state);         % Take first action according to initial policy
-    s_prime = state + action;               % Compute New state given previous action 
-    s_prime = max(min(s_prime,11),1);       % Saturate States at Limits of State Space    
-    reward = mc_reward_func(s_prime);       % Compute Current time step reward 
-
+    s_prime = 5;                     % Initialize first state
     index = 1;                              % Trajectory Index
+    
     while term_flag ~= true
+        
+        state = s_prime;
+        action = take_random_action();          % Randomly Select First action
+        s_prime = state + action;               % Compute New state given previous action 
+        s_prime = max(min(s_prime,12),1);       % Saturate States at Limits of State Space    
+        reward = mc_reward_func(s_prime);  
         
         temp_traj(index,:) = [state, action, reward, s_prime];  
         index = index + 1; 
-        
-        if state == 1 || state == 11
-           term_flag = false;  
+         
+        if s_prime == 1 || s_prime == 12
+           term_flag = true;  
         end
         
     end 
+    
+    traj = temp_traj;
+end 
 
+function action = take_random_action()
 
+    action_prob = rand();                   % Take first action according to initial policy
+    
+    if action_prob >=0 && action_prob <.5
+        action = -1; 
+    else
+        action = 1; 
+    end 
+end
 
+function v_hat = value_function(state, W)
+    
+    if state>=2 && state <101
+        features = [1, 0,0,0,0,0,0,0,0,0];
+        
+    elseif state>=101 && state <201
+        features = [0, 1,0,0,0,0,0,0,0,0];
+        
+    elseif state>=201 && state <301
+        features = [0, 0,1,0,0,0,0,0,0,0];
+        
+    elseif state>=301 && state <401
+        features = [0, 0,0,1,0,0,0,0,0,0];
+        
+    elseif state>=401 && state <501
+        features = [0, 0,0,0,1,0,0,0,0,0];
+        
+    elseif state>=501 && state <601
+        features = [0, 0,0,0,0,1,0,0,0,0];
+        
+    elseif state>=601 && state <701
+        features = [0, 0,0,0,0,0,1,0,0,0];
+        
+    elseif state>=701 && state <801
+        features = [0, 0,0,0,0,0,0,1,0,0];
+        
+    elseif state>=801 && state <901
+        features = [0, 0,0,0,0,0,0,0,1,0];
+        
+    else
+        features = [0, 0,0,0,0,0,0,0,0,1];
+    end 
 
+    v_hat = dot(W, features); 
 
 end 
+
+function Return = compute_MC_return(trajectory)
+
+traj_len = length(trajectory(:,1));
+
+    
+
+
+
+end
