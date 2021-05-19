@@ -1,4 +1,5 @@
 % EEC 289A HW #6
+% Jonathan Dorsey
 
 % Game Rules: 
 % Random Walk Dynamics (Walk Left: .5) (Walk Right: .5)
@@ -10,7 +11,10 @@
 %   Right Term Reward: 1 
 %   ALL other Transitions : 0 
 
-% Parameters 
+%% Gradient Monte Carlo Learning (RUN TIME: 32 seconds)
+
+t0 = tic; 
+
 theta = .000001;                           % Accuracy Param
 gamma = 1.0;                              % Discount Factor
 v_true = .5*ones(1,1002);                  % Initialize True Value Function
@@ -56,14 +60,6 @@ end
 v_true(1002) = 0.921963997433083;                        
 v_true(1) = -0.921956024324813;
 
-
-figure();
-plot(v_true);
-xlabel("States");
-ylabel("Value Scales");
-title("1000-State Random Walk");
-
-% Gradient Monte Carlo (w/Linear Function Approx) 
 num_eps = 100000;                               % Number of Episodes to Train 
 alpha = .00002;                              % Set Learning Rate 
 W = zeros(1,10);                                % Initialize Feature Weights
@@ -73,13 +69,11 @@ gamma = 1;
 
 for eps = 1:1:num_eps                           % Iterate Over Episodes
     Gt = 0; 
-    disp(eps);
     [traj, traj_length] = generate_trajectory();               % Generate Complete Episode Trajectory
     
     for steps = 1:1:(traj_length)               % Iterate Over each Episode Transition
         
         state = traj(steps,1);                  % Extract Current State 
-%         Gt = traj(steps,3) + gamma*Gt;          % Compute MC Learning based Return
         Gt = traj(end,3);         % Compute MC Learning based Return
         
         features = create_features(state);      % Use Current State to Define current "feature"
@@ -87,7 +81,7 @@ for eps = 1:1:num_eps                           % Iterate Over Episodes
         W = W + alpha*(Gt - value_function(state, W))*features;
     end 
 end 
-%%
+
 value_mc = zeros(1,1000);
 for state = 1:1:1000
     
@@ -95,24 +89,34 @@ for state = 1:1:1000
     
 end 
 
+tf = toc(t0)
+value_mc(1) = value_mc(2);
 
-plot(value_mc)
+figure(1)
+hold on
+plot(value_mc, "b")
+plot(v_true, "r")
 
-%% Semi-Gradient TD(0)
+xlabel("State")
+ylabel("Value Scale")
+title("Fig 9.1 Reproduction")
+legend("Gradient MC","True Value Func.")
 
-% Gradient Monte Carlo (w/Linear Function Approx) 
-num_eps = 100000;                               % Number of Episodes to Train 
+%% Semi-Gradient TD(0)(RUN TIME: 90 seconds)
+
+t0 = tic; 
+
+num_eps = 300000;                               % Number of Episodes to Train 
 alpha = .00002;                              % Set Learning Rate 
 W = zeros(1,10);                                % Initialize Feature Weights
 gamma = 1; 
 
-s_prime = 500;
 
 for eps = 1:1:num_eps                           % Iterate Over Episodes
-    disp(eps);    
     
     term_flag = false;
-    
+    s_prime = 500;
+
     while term_flag ~= true
     
         state = s_prime;
@@ -121,10 +125,15 @@ for eps = 1:1:num_eps                           % Iterate Over Episodes
         s_prime = max(min(s_prime,1002),1);       % Saturate States at Limits of State Space    
         reward = TD0_reward_func(s_prime);  
 
-
         features = create_features(state);      % Use Current State to Define current "feature"
-        W = W + alpha*(reward + value_function(s_prime,W) - value_function(state, W))*features;
+        if s_prime == 1 || s_prime ==1002
+            W = W + alpha*(reward + 0 - value_function(state, W))*features;
 
+        else
+            W = W + alpha*(reward + gamma*value_function(s_prime,W) - value_function(state, W))*features;
+
+        end
+        
         if s_prime <=1 || s_prime >=1002
             term_flag= true; 
 
@@ -132,6 +141,25 @@ for eps = 1:1:num_eps                           % Iterate Over Episodes
     end
 end 
 
+value_td = zeros(1,1000);
+for state = 1:1:1000
+    
+    value_td(state) = value_function(state, W);
+    
+end 
+value_td(1) = value_td(2);
+tf = toc(t0)
+
+
+figure(2)
+hold on
+plot(value_td, "b")
+plot(v_true, "r")
+
+xlabel("State")
+ylabel("Value Scale")
+title("Fig 9.2 Reproduction")
+legend("Semi-Gradient TD(0)","True Value Func.")
 
 
 
