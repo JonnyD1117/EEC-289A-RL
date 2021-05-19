@@ -62,11 +62,10 @@ plot(v_true);
 xlabel("States");
 ylabel("Value Scales");
 title("1000-State Random Walk");
-%%
 
 % Gradient Monte Carlo (w/Linear Function Approx) 
 num_eps = 100000;                               % Number of Episodes to Train 
-alpha = 2*10^(-5);                              % Set Learning Rate 
+alpha = .00002;                              % Set Learning Rate 
 W = zeros(1,10);                                % Initialize Feature Weights
 gamma = 1; 
 
@@ -75,30 +74,65 @@ gamma = 1;
 for eps = 1:1:num_eps                           % Iterate Over Episodes
     Gt = 0; 
     disp(eps);
-    traj = generate_trajectory();               % Generate Complete Episode Trajectory
-    traj_length = length(traj(:,1));            % Compute the Episode Length     
+    [traj, traj_length] = generate_trajectory();               % Generate Complete Episode Trajectory
     
     for steps = 1:1:(traj_length)               % Iterate Over each Episode Transition
         
         state = traj(steps,1);                  % Extract Current State 
+%         Gt = traj(steps,3) + gamma*Gt;          % Compute MC Learning based Return
+        Gt = traj(end,3);         % Compute MC Learning based Return
         
-        Gt = traj(steps,2) + gamma*Gt;          % Compute MC Learning based Return
         features = create_features(state);      % Use Current State to Define current "feature"
 
         W = W + alpha*(Gt - value_function(state, W))*features;
     end 
 end 
-%% 
+%%
+value_mc = zeros(1,1000);
+for state = 1:1:1000
+    
+    value_mc(state) = value_function(state, W);
+    
+end 
 
-t0 = tic;
 
-% traj = generate_trajectory();
+plot(value_mc)
+
+%% Semi-Gradient TD(0)
+
+% Gradient Monte Carlo (w/Linear Function Approx) 
+num_eps = 100000;                               % Number of Episodes to Train 
+alpha = .00002;                              % Set Learning Rate 
 W = zeros(1,10);                                % Initialize Feature Weights
+gamma = 1; 
 
-feat = create_features(500);
+s_prime = 500;
 
-    v_hat = dot(W,feat); 
-    tf = toc(t0)
+for eps = 1:1:num_eps                           % Iterate Over Episodes
+    disp(eps);    
+    
+    term_flag = false;
+    
+    while term_flag ~= true
+    
+    state = s_prime;
+    action = take_random_action();          % Randomly Select First action
+    s_prime = state + action;               % Compute New state given previous action 
+    s_prime = max(min(s_prime,1002),1);       % Saturate States at Limits of State Space    
+    reward = TD0_reward_func(s_prime);  
+        
+        
+    features = create_features(state);      % Use Current State to Define current "feature"
+    W = W + alpha*(reward + value_function(s_prime,W) - value_function(state, W))*features;
+        
+    
+    if s_prime 
+        
+    end 
+    
+
+end 
+
 
 
 
@@ -118,9 +152,9 @@ end
 
 function r = mc_reward_func(state)
 
-    if state == 1
+    if state <= 1
         r = -1;
-    elseif state == 1002
+    elseif state >= 1002
         r = 1;     
     else
         r = 0 ; 
@@ -128,10 +162,22 @@ function r = mc_reward_func(state)
 
 end 
 
-function traj = generate_trajectory()
+function r = TD0_reward_func(state)
+
+    if state <= 1
+        r = -1;
+    elseif state >= 1002
+        r = 1;     
+    else
+        r = 0 ; 
+    end
+
+end 
+
+function [new_traj, real_ind] = generate_trajectory()
 
     term_flag = false;                      % Initialize Termination Flag -> False
-    temp_traj = [] ;                        % Create Empty Matrix for trajectory transitions
+    traj = zeros(100000,4) ;                        % Create Empty Matrix for trajectory transitions
     
     s_prime = 500;                     % Initialize first state
     index = 1;                              % Trajectory Index
@@ -144,18 +190,17 @@ function traj = generate_trajectory()
         s_prime = max(min(s_prime,1002),1);       % Saturate States at Limits of State Space    
         reward = mc_reward_func(s_prime);  
         
-%         temp_traj(index,:) = [state, action, reward, s_prime];  
-        temp_traj(index,:) = [state, reward];  
-
+        traj(index,:) = [state, action, reward, s_prime];  
         index = index + 1; 
          
-        if s_prime == 1 || s_prime == 1002
+        if s_prime <= 1 || s_prime >= 1002
            term_flag = true;  
         end
-        
+                
     end 
-    
-    traj = temp_traj;
+     
+   real_ind = index -1;
+   new_traj = traj(1:real_ind,:);
 end 
 
 function action = take_random_action()
@@ -163,10 +208,14 @@ function action = take_random_action()
     action_prob = rand();                   % Take first action according to initial policy
     
     if action_prob <.5
-        action = -1; 
+        dir = -1; 
     else
-        action = 1; 
+        dir = 1; 
     end 
+    
+    step_size = randi([1,100],1,1); 
+    
+    action = dir*step_size;
 end
 
 function v_hat = value_function(state, W)
@@ -182,7 +231,7 @@ function features = create_features(state)
         features = zeros(1,10);
 
 
-    if state>=1 && state <101
+    if state>=2 && state <101
         features(1) = 1; 
         
     elseif state>=101 && state <201
@@ -207,9 +256,9 @@ function features = create_features(state)
         features(8) = 1;
         
     elseif state>=801 && state <901
-        features(8) = 1;
+        features(9) = 1;
         
     else
-        features(1) = 1;
+        features(10) = 1;
     end 
 end 
