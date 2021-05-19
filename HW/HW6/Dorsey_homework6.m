@@ -13,8 +13,6 @@
 
 %% Gradient Monte Carlo Learning (RUN TIME: 32 seconds)
 
-t0 = tic; 
-
 theta = .000001;                           % Accuracy Param
 gamma = 1.0;                              % Discount Factor
 v_true = .5*ones(1,1002);                  % Initialize True Value Function
@@ -89,7 +87,6 @@ for state = 1:1:1000
     
 end 
 
-tf = toc(t0)
 value_mc(1) = value_mc(2);
 
 figure(1)
@@ -102,9 +99,65 @@ ylabel("Value Scale")
 title("Fig 9.1 Reproduction")
 legend("Gradient MC","True Value Func.")
 
-%% Semi-Gradient TD(0)(RUN TIME: 90 seconds)
+%% Semi-Gradient TD(0)(RUN TIME: 32 seconds)
 
-t0 = tic; 
+% Use the SAME parameters as Problem #1 (According to HW Directions) 
+num_eps = 100000;                               % Number of Episodes to Train 
+alpha = .00002;                                 % Set Learning Rate 
+W = zeros(1,10);                                % Initialize Feature Weights
+gamma = 1; 
+
+
+for eps = 1:1:num_eps                           % Iterate Over Episodes
+    
+    term_flag = false;
+    s_prime = 500;
+
+    while term_flag ~= true
+    
+        state = s_prime;
+        action = take_random_action();          % Randomly Select First action
+        s_prime = state + action;               % Compute New state given previous action 
+        s_prime = max(min(s_prime,1002),1);       % Saturate States at Limits of State Space    
+        reward = TD0_reward_func(s_prime);  
+
+        features = create_features(state);      % Use Current State to Define current "feature"
+        if s_prime == 1 || s_prime ==1002
+            W = W + alpha*(reward + 0 - value_function(state, W))*features;
+
+        else
+            W = W + alpha*(reward + gamma*value_function(s_prime,W) - value_function(state, W))*features;
+
+        end
+        
+        if s_prime <=1 || s_prime >=1002
+            term_flag= true; 
+
+        end 
+    end
+end 
+
+value_td = zeros(1,1000);
+for state = 1:1:1000
+    
+    value_td(state) = value_function(state, W);
+    
+end 
+value_td(1) = value_td(2);
+
+figure(2)
+hold on
+plot(value_mc, "k")
+plot(value_td, "b")
+plot(v_true, "r")
+
+xlabel("State")
+ylabel("Value Scale")
+title("Problem #2 Semi-Gradient TD(0)")
+legend("Gradient MC","Semi-Gradient TD(0)","True Value Func.")
+
+
+%% Reproduce Figure 9.2 (RUN TIME: 90 seconds)
 
 num_eps = 300000;                               % Number of Episodes to Train 
 alpha = .00002;                              % Set Learning Rate 
@@ -148,10 +201,10 @@ for state = 1:1:1000
     
 end 
 value_td(1) = value_td(2);
-tf = toc(t0)
 
 
-figure(2)
+
+figure(3)
 hold on
 plot(value_td, "b")
 plot(v_true, "r")
@@ -160,7 +213,6 @@ xlabel("State")
 ylabel("Value Scale")
 title("Fig 9.2 Reproduction")
 legend("Semi-Gradient TD(0)","True Value Func.")
-
 
 
 %% Function Definitions 
