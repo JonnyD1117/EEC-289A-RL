@@ -35,9 +35,7 @@ while true
                 
                 r = reward_func(s_next); 
                 v_temp = v_temp + .5*(1/100)*(r + gamma*v_true(s_next));
-
             end 
-
         end
         
         v_true(s) = v_temp;
@@ -64,36 +62,39 @@ plot(v_true);
 xlabel("States");
 ylabel("Value Scales");
 title("1000-State Random Walk");
-
+%%
 
 % Gradient Monte Carlo (w/Linear Function Approx) 
+num_eps = 100000;                               % Number of Episodes to Train 
+alpha = 2*10^(-5);                              % Set Learning Rate 
+W = zeros(1,10);                                % Initialize Feature Weights
+gamma = 1; 
 
-num_eps = 100000; 
-alpha = 2*10^(-5);
 
-W = zeros(1,10);
 
-for eps = 1:1:num_eps
-    delta = 0 ; 
+for eps = 1:1:num_eps                           % Iterate Over Episodes
+    Gt = 0; 
+    disp(eps);
+    traj = generate_trajectory();               % Generate Complete Episode Trajectory
+    traj_length = length(traj(:,1));            % Compute the Episode Length     
     
-    traj = generate_trajectory();     
-    num_state_in_traj = length(traj(:,1));
-    
-    for steps = 1:1:(num_state_in_traj-1)
-            W = W + alpha(G_t - value_function(state, W))*state;
+    for steps = 1:1:(traj_length)               % Iterate Over each Episode Transition
+        
+        state = traj(steps,1);                  % Extract Current State 
+        
+        Gt = traj(steps,2) + gamma*Gt;          % Compute MC Learning based Return
+        features = create_features(state);      % Use Current State to Define current "feature"
+
+        W = W + alpha*(Gt - value_function(state, W))*features;
     end 
-    
-    
-    
-%     delta = max(delta, abs(v - value_mc(s))); 
-%     
-%     if delta < theta_mc      
-%         break 
-%     end 
 end 
+%% 
 
+t0 = tic;
 
+traj = generate_trajectory();
 
+tf = toc(t0)
 
 
 %% Function Definitions 
@@ -114,7 +115,7 @@ function r = mc_reward_func(state)
 
     if state == 1
         r = -1;
-    elseif state == 12
+    elseif state == 1002
         r = 1;     
     else
         r = 0 ; 
@@ -127,7 +128,7 @@ function traj = generate_trajectory()
     term_flag = false;                      % Initialize Termination Flag -> False
     temp_traj = [] ;                        % Create Empty Matrix for trajectory transitions
     
-    s_prime = 5;                     % Initialize first state
+    s_prime = 500;                     % Initialize first state
     index = 1;                              % Trajectory Index
     
     while term_flag ~= true
@@ -135,13 +136,15 @@ function traj = generate_trajectory()
         state = s_prime;
         action = take_random_action();          % Randomly Select First action
         s_prime = state + action;               % Compute New state given previous action 
-        s_prime = max(min(s_prime,12),1);       % Saturate States at Limits of State Space    
+        s_prime = max(min(s_prime,1002),1);       % Saturate States at Limits of State Space    
         reward = mc_reward_func(s_prime);  
         
-        temp_traj(index,:) = [state, action, reward, s_prime];  
+%         temp_traj(index,:) = [state, action, reward, s_prime];  
+        temp_traj(index,:) = [state, reward];  
+
         index = index + 1; 
          
-        if s_prime == 1 || s_prime == 12
+        if s_prime == 1 || s_prime == 1002
            term_flag = true;  
         end
         
@@ -154,7 +157,7 @@ function action = take_random_action()
 
     action_prob = rand();                   % Take first action according to initial policy
     
-    if action_prob >=0 && action_prob <.5
+    if action_prob <.5
         action = -1; 
     else
         action = 1; 
@@ -163,47 +166,52 @@ end
 
 function v_hat = value_function(state, W)
     
-    if state>=2 && state <101
-        features = [1, 0,0,0,0,0,0,0,0,0];
-        
-    elseif state>=101 && state <201
-        features = [0, 1,0,0,0,0,0,0,0,0];
-        
-    elseif state>=201 && state <301
-        features = [0, 0,1,0,0,0,0,0,0,0];
-        
-    elseif state>=301 && state <401
-        features = [0, 0,0,1,0,0,0,0,0,0];
-        
-    elseif state>=401 && state <501
-        features = [0, 0,0,0,1,0,0,0,0,0];
-        
-    elseif state>=501 && state <601
-        features = [0, 0,0,0,0,1,0,0,0,0];
-        
-    elseif state>=601 && state <701
-        features = [0, 0,0,0,0,0,1,0,0,0];
-        
-    elseif state>=701 && state <801
-        features = [0, 0,0,0,0,0,0,1,0,0];
-        
-    elseif state>=801 && state <901
-        features = [0, 0,0,0,0,0,0,0,1,0];
-        
-    else
-        features = [0, 0,0,0,0,0,0,0,0,1];
-    end 
-
-    v_hat = dot(W, features); 
+    features = create_features(state);
+    
+    v_hat = dot(W,features); 
 
 end 
 
-function Return = compute_MC_return(trajectory)
+function features = create_features(state)
 
-traj_len = length(trajectory(:,1));
-
-    
-
-
-
-end
+    if state>=1 && state <101
+        features = zeros(1,10);
+        features(1) = 1; 
+        
+    elseif state>=101 && state <201
+        features = zeros(1,10);
+        features(2) = 1;   
+        
+    elseif state>=201 && state <301
+        features = zeros(1,10);
+        features(3) = 1;
+        
+    elseif state>=301 && state <401
+        features = zeros(1,10);
+        features(4) = 1;
+        
+    elseif state>=401 && state <501
+        features = zeros(1,10);
+        features(5) = 1;
+        
+    elseif state>=501 && state <601
+        features = zeros(1,10);
+        features(6) = 1;
+        
+    elseif state>=601 && state <701
+        features = zeros(1,10);
+        features(7) = 1;
+        
+    elseif state>=701 && state <801
+        features = zeros(1,10);
+        features(8) = 1;
+        
+    elseif state>=801 && state <901
+        features = zeros(1,10);
+        features(8) = 1;
+        
+    else
+        features = zeros(1,10);
+        features(1) = 1;
+    end 
+end 

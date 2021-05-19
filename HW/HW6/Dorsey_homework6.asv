@@ -68,35 +68,32 @@ title("1000-State Random Walk");
 
 % Gradient Monte Carlo (w/Linear Function Approx) 
 
-num_eps = 100000; 
-alpha = 2*10^(-5);
+num_eps = 100000;                               % Number of Episodes to Train 
+alpha = 2*10^(-5);                              % Set Learning Rate 
+W = zeros(1,10);                                % Initialize Feature Weights
 
-W = zeros(1,10);
-value_mc = .5*ones(1, 10);
+for eps = 1:1:num_eps                           % Iterate Over Episodes
+    
+    traj = generate_trajectory();               % Generate Complete Episode Trajectory
+    traj_length = length(traj(:,1));            % Compute the Episode Length     
+    
+    for steps = 1:1:(traj_length)               % Iterate Over each Episode Transition
+        
+        state = traj(steps,1);                  % Extract Current State 
+        
+        Gt = sum(traj(1:steps, 3));
+        features = create_features(state);
 
-for eps = 1:1:num_eps
-    delta = 0 ; 
-    
-    traj = generate_trajectory();     
-    num_state_in_traj = length(traj(:,1));
-    
-    for steps = 1:1:
-        
-        
+        W = W + alpha(G_t - value_function(state, W))*features;
     end 
     
     
-    W = W + alpha(G_t - value_function(state, W))*state;
-    
-    delta = max(delta, abs(v - value_mc(s))); 
-    
-    if delta < theta_mc      
-        break 
-    end 
+   
 end 
 
+%% 
 
-
+traj = generate_trajectory();
 
 
 %% Function Definitions 
@@ -166,35 +163,56 @@ end
 
 function v_hat = value_function(state, W)
     
+    features = create_features(state);
+    
+    v_hat = dot(W, features); 
+
+end 
+
+function Gt = compute_MC_return(trajectory, gamma)
+
+Gt = 0;
+traj_len = length(trajectory(:,1));
+cnt = 0;
+
+    for step = 1:1:traj_len
+        Gt = ((gamma)^(cnt))*Gt + trajectory(step, 3);
+        cnt = cnt + 1; 
+    end 
+
+end
+
+function features = create_features(state)
+
     if state>=2 && state <101
         features = [1, 0,0,0,0,0,0,0,0,0];
         
     elseif state>=101 && state <201
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 1,0,0,0,0,0,0,0,0];
         
     elseif state>=201 && state <301
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 0,1,0,0,0,0,0,0,0];
         
     elseif state>=301 && state <401
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 0,0,1,0,0,0,0,0,0];
         
     elseif state>=401 && state <501
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 0,0,0,1,0,0,0,0,0];
         
     elseif state>=501 && state <601
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 0,0,0,0,1,0,0,0,0];
+        
     elseif state>=601 && state <701
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 0,0,0,0,0,1,0,0,0];
+        
     elseif state>=701 && state <801
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 0,0,0,0,0,0,1,0,0];
+        
     elseif state>=801 && state <901
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 0,0,0,0,0,0,0,1,0];
+        
     else
-        features = [1, 0,0,0,0,0,0,0,0,0];
+        features = [0, 0,0,0,0,0,0,0,0,1];
     end 
 
-    v_hat = dot(W, state); 
-
 end 
-
-
