@@ -93,8 +93,8 @@ end
 t0 = tic;
 
 traj = generate_trajectory();
-
 tf = toc(t0)
+
 
 
 %% Function Definitions 
@@ -123,10 +123,10 @@ function r = mc_reward_func(state)
 
 end 
 
-function traj = generate_trajectory()
+function new_traj = generate_trajectory()
 
     term_flag = false;                      % Initialize Termination Flag -> False
-    temp_traj = [] ;                        % Create Empty Matrix for trajectory transitions
+    traj = zeros(1000000,2) ;                        % Create Empty Matrix for trajectory transitions
     
     s_prime = 500;                     % Initialize first state
     index = 1;                              % Trajectory Index
@@ -140,17 +140,17 @@ function traj = generate_trajectory()
         reward = mc_reward_func(s_prime);  
         
 %         temp_traj(index,:) = [state, action, reward, s_prime];  
-        temp_traj(index,:) = [state, reward];  
+        traj(index,:) = [state, reward];  
 
         index = index + 1; 
          
         if s_prime == 1 || s_prime == 1002
            term_flag = true;  
         end
-        
+                
     end 
-    
-    traj = temp_traj;
+     
+   new_traj = traj(1:index,:);
 end 
 
 function action = take_random_action()
@@ -166,52 +166,45 @@ end
 
 function v_hat = value_function(state, W)
     
-    features = create_features(state);
+    feat = create_features(state);
     
-    v_hat = dot(W,features); 
+    v_hat = dot(W,feat); 
 
 end 
 
 function features = create_features(state)
 
-    if state>=1 && state <101
         features = zeros(1,10);
+
+
+    if state>=1 && state <101
         features(1) = 1; 
         
     elseif state>=101 && state <201
-        features = zeros(1,10);
         features(2) = 1;   
         
     elseif state>=201 && state <301
-        features = zeros(1,10);
         features(3) = 1;
         
     elseif state>=301 && state <401
-        features = zeros(1,10);
         features(4) = 1;
         
     elseif state>=401 && state <501
-        features = zeros(1,10);
         features(5) = 1;
         
     elseif state>=501 && state <601
-        features = zeros(1,10);
         features(6) = 1;
         
     elseif state>=601 && state <701
-        features = zeros(1,10);
         features(7) = 1;
         
     elseif state>=701 && state <801
-        features = zeros(1,10);
         features(8) = 1;
         
     elseif state>=801 && state <901
-        features = zeros(1,10);
-        features(8) = 1;
+        features(9) = 1;
         
     else
-        features = zeros(1,10);
-        features(1) = 1;
+        features(10) = 1;
     end 
 end 
