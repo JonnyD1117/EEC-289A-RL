@@ -11,7 +11,8 @@
 %   Right Term Reward: 1 
 %   ALL other Transitions : 0 
 
-%% Gradient Monte Carlo Learning (RUN TIME: 32 seconds)
+%% Gradient Monte Carlo Learning (RUN TIME: 72 seconds)
+t0_0 = tic;
 
 theta = .000001;                           % Accuracy Param
 gamma = 1.0;                              % Discount Factor
@@ -99,7 +100,11 @@ ylabel("Value Scale")
 title("Fig 9.1 Reproduction")
 legend("Gradient MC","True Value Func.")
 
-%% Semi-Gradient TD(0)(RUN TIME: 32 seconds)
+tf_0 = toc(t0_0)
+
+%% Semi-Gradient TD(0)(RUN TIME: 55 seconds)
+
+t0_1 = tic; 
 
 % Use the SAME parameters as Problem #1 (According to HW Directions) 
 num_eps = 100000;                               % Number of Episodes to Train 
@@ -156,8 +161,10 @@ ylabel("Value Scale")
 title("Problem #2 Semi-Gradient TD(0)")
 legend("Gradient MC","Semi-Gradient TD(0)","True Value Func.")
 
+tf_1 = toc(t0_1)
+%% Reproduce Figure 9.2 (RUN TIME: 167 seconds)
 
-%% Reproduce Figure 9.2 (RUN TIME: 90 seconds)
+t0_2 = tic;
 
 num_eps = 300000;                               % Number of Episodes to Train 
 alpha = .00002;                              % Set Learning Rate 
@@ -214,7 +221,7 @@ ylabel("Value Scale")
 title("Fig 9.2 Reproduction")
 legend("Semi-Gradient TD(0)","True Value Func.")
 
-
+tf_2 = toc(t0_2)
 %% Function Definitions 
 
 function r = reward_func(state)
