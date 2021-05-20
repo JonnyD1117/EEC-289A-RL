@@ -1,0 +1,63 @@
+\documentclass[12pt]{article}
+
+
+\usepackage[fleqn]{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+\usepackage{caption}
+% \usepackage{subcaption}
+
+\usepackage{subfig}
+% \usepackage{subcaption}
+% \graphicspath{ {C:/Users/Indy-Windows/Documents/EEC-289A-RL/HW/HW1/latex_file/images/}}
+\graphicspath{ {images/}}
+
+
+\usepackage{hyperref}
+\hypersetup{
+colorlinks=false,
+linkcolor=blue,
+filecolor=magenta,
+    urlcolor=blue,
+}
+\urlstyle{same}
+
+\begin{document}
+
+
+\title{ EEC-289A Reinforcement Learning \\ Homework \#6 }
+
+
+\author{Jonathan~Dorsey \\\url{https://github.com/JonnyD1117/EEC-289A-RL/tree/main/HW}}
+\maketitle
+
+\section*{Problem \#1: }
+
+\textbf{Reproduce Figure 9.1:} This problem reproduces Figure 9.1 in Sutton \& Barto, which illustrates a 1000-State Random Walk environment. The figure shows how the actual value function for the MDP (computed using Policy Evaluation), and the \underline{State Aggregation} solution which uses a linear function to approximate the true value function of the environment. The approximate solution is obtained by using \underline{Gradient Monte Carlo Learning}.
+
+\includegraphics[scale=0.45]{"/fig_9_1"}
+
+\noindent In this figure, the true value function is shown a mostly straight line, while the approximate value function is shown in a stair-step pattern. This pattern for the approximate solution is due to the state aggregation.
+
+
+
+
+\section*{Problem \#2: }
+
+In this problem, the same environment as in Problem \#1 is evaluated using \underline{Semi-Gradient TD(0)}. However this solution uses the same settings and parameters as used in the previous problem. As such, the solution to this problem does not actually reproduce Figure 9.2 (Sutton \& Barto), which uses the same algorithms on the same environment.
+
+\includegraphics[scale=0.45]{"/semi_grad_td"}
+
+\noindent As can be seen, the Semi-Gradient TD(0) algorithm (using the same settings as Problem \#1), the approximate value function obtained is biased and has not converged.
+
+\section*{For Fun}
+
+In order to get the Semi-Gradient TD(0) algorithm to reprodce exactly like Figure 9.2, the algorithm requires more episodes of training. While a simple change, this has the effect of making the results from this algorithm reproduce Figure 9.2 far better than using the same settings as the first problem.
+
+\includegraphics[scale=0.45]{"/fig_9_2"}
+
+
+
+
+\end{document}

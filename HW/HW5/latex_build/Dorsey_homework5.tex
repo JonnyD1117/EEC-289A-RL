@@ -1,0 +1,53 @@
+\documentclass[12pt]{article}
+
+
+\usepackage[fleqn]{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+\usepackage{caption}
+% \usepackage{subcaption}
+
+\usepackage{subfig}
+% \usepackage{subcaption}
+% \graphicspath{ {C:/Users/Indy-Windows/Documents/EEC-289A-RL/HW/HW1/latex_file/images/}}
+\graphicspath{ {images/}}
+
+
+\usepackage{hyperref}
+\hypersetup{
+colorlinks=false,
+linkcolor=blue,
+filecolor=magenta,
+    urlcolor=blue,
+}
+\urlstyle{same}
+
+\begin{document}
+
+
+\title{ EEC-289A Reinforcement Learning \\ Homework \#5 }
+
+
+\author{Jonathan~Dorsey \\\url{https://github.com/JonnyD1117/EEC-289A-RL/tree/main/HW}}
+\maketitle
+
+\section*{Problem \#1: }
+
+\textbf{Reproduce Figure 6.6:} Figure 6.6 in the Sutton \& Barto text shows the Cliff Walking environment, being solved by two seperate learning algorithms (SARSA and Q-Learning). Both of these algorithms solve the MDP; however, do to algorithmic differences SARSA and Q-Learning achieve different steady state solutions for this environment. \\
+
+\includegraphics[scale=0.45]{"/SARSA_Q_Learning"}
+
+\noindent The figure above shows the average performance of SARSA and the Q-Learning algorithms in the Cliff Walking grid world.
+
+
+
+\section*{Problem \#2: }
+
+\textbf{Expected SARSA:} For this problem, the same Cliff Walking problem is evaluated with the addition of the \underline{Expected SARSA} algorithm. This algorithm differs from regular SARSA in that it computes the expectation over the next possible actions instead of boot-strapping from the next states' Q value. This in general is more accurate but comes with a computational cost.
+
+\includegraphics[scale=0.45]{"/Expected_SARSA"}
+
+\noindent The figure above shows SARSA, Q-Learning, \& Expected SARSA average performance. As can be seen, Expected SARSA (on average) achieves a higher reward than the other methods previous shown. 
+
+\end{document}

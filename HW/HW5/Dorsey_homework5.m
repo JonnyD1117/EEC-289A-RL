@@ -31,15 +31,15 @@ Q = zeros(4, 12 ,num_actions);
     Q(4, 12,:) = 0;
 
 for run = 1:1:num_runs              % Iterate over Total number of averaging RUNS 
-    disp("RUN")
-    run
+%     disp("RUN")
+%     run
 
-%     Q = zeros(4, 12 ,num_actions);
-%     Q(4, 12,:) = 0;
+    Q = zeros(4, 12 ,num_actions);
+    Q(4, 12,:) = 0;
     
     for eps = 1:1:num_episodes      % Iterate over Total number of Episodes 
-        disp("Num. Episodes")
-        eps
+%         disp("Num. Episodes")
+%         eps
         
         reward_sum = 0 ;                                                                % Set Reward_SUM to zero 
         state = [4, 1];                                                                 % Initialize START State 
@@ -130,15 +130,15 @@ Q = zeros(4, 12 ,num_actions);
     Q(4, 12,:) = 0;
 
 for run = 1:1:num_runs              % Iterate over Total number of averaging RUNS 
-    disp("RUN")
-    run
+%     disp("RUN")
+%     run
 
-%     Q = zeros(4, 12 ,num_actions);
-%     Q(4, 12,:) = 0;
+    Q = zeros(4, 12 ,num_actions);
+    Q(4, 12,:) = 0;
     
     for eps = 1:1:num_episodes      % Iterate over Total number of Episodes 
-        disp("Num. Episodes")
-        eps
+%         disp("Num. Episodes")
+%         eps
         
         reward_sum = 0 ;                                                                % Set Reward_SUM to zero 
         state = [4, 1];                                                                 % Initialize START State 
@@ -237,15 +237,15 @@ Q = zeros(4, 12 ,num_actions);
     Q(4, 12,:) = 0;
 
 for run = 1:1:num_runs              % Iterate over Total number of averaging RUNS 
-    disp("RUN")
-    run
+%     disp("RUN")
+%     run
 
-%     Q = zeros(4, 12 ,num_actions);
-%     Q(4, 12,:) = 0;
+    Q = zeros(4, 12 ,num_actions);
+    Q(4, 12,:) = 0;
     
     for eps = 1:1:num_episodes      % Iterate over Total number of Episodes 
-        disp("Num. Episodes")
-        eps
+%         disp("Num. Episodes")
+%         eps
         
         reward_sum = 0 ;                                                                % Set Reward_SUM to zero 
         state = [4, 1];                                                                 % Initialize START State 
